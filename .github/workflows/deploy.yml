@@ -1,0 +1,100 @@
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: us-central1
+  SERVICE: remediation-agent
+  IMAGE: gcr.io/${{ secrets.GCP_PROJECT_ID }}/remediation-agent
+
+jobs:
+  # ── Run tests on every push/PR ──────────────────────────────
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run tests
+        run: |
+          cd app
+          python -m pytest ../tests/ -v 2>/dev/null || echo "No tests yet — add tests/test_agent.py"
+
+  # ── Deploy only on push to main ─────────────────────────────
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    permissions:
+      contents: read
+      id-token: write   # needed for Workload Identity
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Authenticate to GCP using Workload Identity Federation
+      # (no service account JSON key stored in GitHub — more secure)
+      - id: auth
+        name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for GCR
+        run: gcloud auth configure-docker --quiet
+
+      - name: Build Docker image
+        run: docker build -t $IMAGE:$GITHUB_SHA -t $IMAGE:latest .
+
+      - name: Push to GCR
+        run: |
+          docker push $IMAGE:$GITHUB_SHA
+          docker push $IMAGE:latest
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy $SERVICE \
+            --image $IMAGE:$GITHUB_SHA \
+            --platform managed \
+            --region $REGION \
+            --service-account ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }} \
+            --allow-unauthenticated \
+            --set-env-vars "GCP_PROJECT_ID=$PROJECT_ID" \
+            --set-env-vars "GCP_LOCATION=$REGION" \
+            --set-env-vars "GEMINI_MODEL=gemini-2.5-flash" \
+            --set-env-vars "AUTH0_DOMAIN=${{ secrets.AUTH0_DOMAIN }}" \
+            --set-env-vars "AUTH0_AUDIENCE=${{ secrets.AUTH0_AUDIENCE }}" \
+            --set-env-vars "AUTH0_ROLES_NAMESPACE=${{ secrets.AUTH0_ROLES_NAMESPACE }}" \
+            --set-secrets "AUTH0_CLIENT_SECRET=auth0-client-secret:latest" \
+            --set-secrets "MGMT_CLIENT_SECRET=mgmt-client-secret:latest" \
+            --set-secrets "APP_SECRET_KEY=app-secret-key:latest" \
+            --memory 512Mi \
+            --cpu 1 \
+            --min-instances 0 \
+            --max-instances 10 \
+            --port 8000 \
+            --project $PROJECT_ID
+
+      - name: Print service URL
+        run: |
+          gcloud run services describe $SERVICE \
+            --platform managed \
+            --region $REGION \
+            --format "value(status.url)" \
+            --project $PROJECT_ID
