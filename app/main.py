@@ -25,13 +25,13 @@ from starlette.middleware.sessions import SessionMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
-from app.auth_middleware import _decode_token, extract_roles
-from app.agent import detect_failure, generate_remediation_script
-from app.security import scrubber
-from app.vault import vault
-from app.zero_trust import filter_instance, SecurityViolationError
-from app.signing import sign_remediation_payload
-from app.stepup import (
+from auth_middleware import _decode_token, extract_roles
+from agent import detect_failure, generate_remediation_script
+from security import scrubber
+from vault import vault
+from zero_trust import filter_instance, SecurityViolationError
+from signing import sign_remediation_payload
+from stepup import (
     StepUpContext, check_required, verify_token_has_mfa,
     raise_stepup_required,
 )
