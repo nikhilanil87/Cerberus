@@ -13,126 +13,168 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 @keyframes spin{to{transform:rotate(360deg);}}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
 
 header{position:sticky;top:0;z-index:100;border-bottom:1px solid var(--border);background:rgba(5,8,16,0.95);backdrop-filter:blur(10px);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:64px;}
 .logo{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-weight:700;font-size:1rem;letter-spacing:0.08em;color:var(--accent);}
 .logo-icon{width:30px;height:30px;border:2px solid var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;}
 .logo-sub{color:var(--muted);font-size:0.65rem;font-weight:400;}
-.header-right{display:flex;align-items:center;gap:16px;}
-.user-badge{display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:0.7rem;}
-.role-pill{padding:3px 8px;border-radius:4px;font-size:0.62rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;}
-.role-pill-admin{background:rgba(176,109,255,0.2);color:var(--admin);border:1px solid rgba(176,109,255,0.3);}
-.role-pill-user{background:rgba(0,204,255,0.15);color:var(--user);border:1px solid rgba(0,204,255,0.3);}
-.logout-btn{padding:6px 14px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-family:var(--mono);font-size:0.7rem;cursor:pointer;text-decoration:none;}
+.header-right{display:flex;align-items:center;gap:14px;}
+.user-badge{display:flex;align-items:center;gap:8px;padding:5px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:0.68rem;}
+.role-pill{padding:2px 8px;border-radius:4px;font-size:0.6rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;}
+.role-admin{background:rgba(176,109,255,0.2);color:var(--admin);border:1px solid rgba(176,109,255,0.3);}
+.role-user{background:rgba(0,204,255,0.15);color:var(--user);border:1px solid rgba(0,204,255,0.3);}
+.logout-btn{padding:5px 12px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-family:var(--mono);font-size:0.68rem;cursor:pointer;text-decoration:none;}
 .logout-btn:hover{border-color:var(--red);color:var(--red);}
 .status-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s ease-in-out infinite;}
-
-.app{position:relative;z-index:1;max-width:1300px;margin:0 auto;padding:2rem;display:grid;grid-template-columns:320px 1fr;gap:1.5rem;}
-
+.app{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:2rem;display:grid;grid-template-columns:300px 1fr;gap:1.5rem;}
 .panel{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
-.panel-header{padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:0.68rem;font-weight:500;letter-spacing:0.1em;color:var(--muted);text-transform:uppercase;}
+.ph{padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:0.65rem;font-weight:500;letter-spacing:0.1em;color:var(--muted);text-transform:uppercase;}
 .dot{width:7px;height:7px;border-radius:50%;}
-
-/* Left sidebar */
 .sidebar{grid-column:1;display:flex;flex-direction:column;gap:1rem;}
-
-/* Metrics row */
-.metrics{grid-column:2;display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:0;}
-.metric-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;}
-.metric-label{font-family:var(--mono);font-size:0.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;}
-.metric-val{font-size:1.6rem;font-weight:700;font-family:var(--mono);color:var(--accent);}
-.metric-sub{font-size:0.7rem;color:var(--muted);margin-top:2px;}
-
-/* Log input */
-.log-form{padding:16px;}
-.scenario-list{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
-.scenario-btn{background:transparent;border:1px solid var(--border);border-radius:7px;padding:10px 12px;cursor:pointer;text-align:left;transition:all 0.2s;color:var(--text);font-family:var(--sans);}
-.scenario-btn:hover,.scenario-btn.active{border-color:var(--accent);background:rgba(0,229,255,0.05);}
-.scenario-btn .s-name{font-weight:600;font-size:0.8rem;color:var(--accent);margin-bottom:2px;}
-.scenario-btn .s-svc{font-family:var(--mono);font-size:0.65rem;color:var(--muted);}
-.s-badge{display:inline-block;margin-top:4px;padding:1px 6px;border-radius:3px;font-size:0.6rem;font-family:var(--mono);font-weight:700;}
-.badge-critical{background:rgba(255,60,90,0.15);color:var(--red);border:1px solid rgba(255,60,90,0.3);}
-.badge-high{background:rgba(255,122,48,0.15);color:var(--orange);border:1px solid rgba(255,122,48,0.3);}
-.or-label{font-family:var(--mono);font-size:0.65rem;color:var(--muted);text-align:center;margin:8px 0;}
-.log-textarea{width:100%;background:#000812;border:1px solid var(--border2);border-radius:7px;padding:10px 12px;font-family:var(--mono);font-size:0.72rem;color:var(--accent);outline:none;resize:vertical;min-height:80px;line-height:1.6;}
-.log-textarea:focus{border-color:var(--accent);}
-.form-label{font-family:var(--mono);font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px;display:block;}
-.service-input{width:100%;background:#000812;border:1px solid var(--border2);border-radius:7px;padding:8px 12px;font-family:var(--mono);font-size:0.72rem;color:var(--text);outline:none;margin-bottom:10px;}
-.service-input:focus{border-color:var(--accent);}
-.github-row{display:flex;gap:8px;align-items:center;margin-bottom:10px;}
-.github-input{flex:1;background:#000812;border:1px solid var(--border2);border-radius:7px;padding:8px 12px;font-family:var(--mono);font-size:0.72rem;color:var(--text);outline:none;}
-.analyze-btn{width:100%;padding:12px;background:linear-gradient(135deg,rgba(0,229,255,0.2),rgba(0,229,255,0.08));border:1px solid var(--accent);border-radius:7px;color:var(--accent);font-family:var(--mono);font-size:0.78rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;transition:all 0.2s;}
-.analyze-btn:hover:not(:disabled){background:linear-gradient(135deg,rgba(0,229,255,0.3),rgba(0,229,255,0.15));box-shadow:0 0 20px rgba(0,229,255,0.2);}
+.log-form{padding:14px;}
+.fl{font-family:var(--mono);font-size:0.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px;margin-top:10px;display:block;}
+.fl:first-child{margin-top:0;}
+.sc-btn{width:100%;background:transparent;border:1px solid var(--border);border-radius:6px;padding:9px 11px;cursor:pointer;text-align:left;color:var(--text);font-family:var(--sans);margin-bottom:6px;transition:all 0.15s;}
+.sc-btn:hover,.sc-btn.active{border-color:var(--accent);background:rgba(0,229,255,0.05);}
+.sc-btn .sn{font-weight:600;font-size:0.8rem;color:var(--accent);margin-bottom:1px;}
+.sc-btn .ss{font-family:var(--mono);font-size:0.62rem;color:var(--muted);}
+.sb{display:inline-block;margin-top:3px;padding:1px 6px;border-radius:3px;font-size:0.58rem;font-family:var(--mono);font-weight:700;}
+.sb-c{background:rgba(255,60,90,0.15);color:var(--red);border:1px solid rgba(255,60,90,0.3);}
+.sb-h{background:rgba(255,122,48,0.15);color:var(--orange);border:1px solid rgba(255,122,48,0.3);}
+.log-ta{width:100%;background:#000812;border:1px solid var(--border2);border-radius:7px;padding:9px 11px;font-family:var(--mono);font-size:0.7rem;color:var(--accent);outline:none;resize:vertical;min-height:80px;line-height:1.6;}
+.log-ta:focus{border-color:var(--accent);}
+.inp{width:100%;background:#000812;border:1px solid var(--border2);border-radius:6px;padding:8px 11px;font-family:var(--mono);font-size:0.7rem;color:var(--text);outline:none;}
+.inp:focus{border-color:var(--accent);}
+.analyze-btn{width:100%;margin-top:12px;padding:11px;background:linear-gradient(135deg,rgba(0,229,255,0.2),rgba(0,229,255,0.08));border:1px solid var(--accent);border-radius:7px;color:var(--accent);font-family:var(--mono);font-size:0.75rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;transition:all 0.2s;}
+.analyze-btn:hover:not(:disabled){background:linear-gradient(135deg,rgba(0,229,255,0.3),rgba(0,229,255,0.15));}
 .analyze-btn:disabled{opacity:0.5;cursor:not-allowed;}
-
-/* Main content area */
 .main-area{grid-column:2;display:flex;flex-direction:column;gap:1rem;}
-
-/* Result */
-.result-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;min-height:300px;}
-.result-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;}
-.result-body{display:grid;grid-template-columns:1fr 1fr;gap:0;}
-.result-left{border-right:1px solid var(--border);padding:18px;}
-.result-right{padding:18px;}
-.issue-title{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:10px;line-height:1.4;}
-.meta-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
-.meta-chip{padding:3px 8px;border-radius:3px;font-family:var(--mono);font-size:0.62rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;}
-.chip-critical{background:rgba(255,60,90,0.15);color:var(--red);border:1px solid rgba(255,60,90,0.25);}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;}
+.mc{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem 1.1rem;}
+.ml{font-family:var(--mono);font-size:0.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px;}
+.mv{font-size:1.5rem;font-weight:700;font-family:var(--mono);color:var(--accent);}
+.ms{font-size:0.65rem;color:var(--muted);margin-top:1px;}
+.result-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.rh{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;}
+.rb{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+.rl{border-right:1px solid var(--border);padding:16px;}
+.rr{padding:16px;}
+.it{font-size:0.95rem;font-weight:700;color:var(--text);margin-bottom:8px;line-height:1.4;}
+.mr2{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+.chip{padding:3px 8px;border-radius:3px;font-family:var(--mono);font-size:0.6rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;}
+.chip-crit{background:rgba(255,60,90,0.15);color:var(--red);border:1px solid rgba(255,60,90,0.25);}
 .chip-high{background:rgba(255,122,48,0.15);color:var(--orange);border:1px solid rgba(255,122,48,0.25);}
 .chip-admin{background:rgba(176,109,255,0.15);color:var(--admin);border:1px solid rgba(176,109,255,0.25);}
 .chip-user{background:rgba(0,204,255,0.15);color:var(--user);border:1px solid rgba(0,204,255,0.25);}
-.conf-wrap{margin-bottom:12px;}
-.conf-label{font-family:var(--mono);font-size:0.65rem;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:4px;}
-.conf-bar{height:5px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden;}
+.chip-gray{background:rgba(0,229,255,0.08);color:var(--muted);border:1px solid var(--border);}
+.chip-green{background:rgba(0,255,157,0.1);color:var(--green);border:1px solid rgba(0,255,157,0.3);}
+.chip-red{background:rgba(255,60,90,0.15);color:var(--red);border:1px solid rgba(255,60,90,0.3);}
+.chip-yellow{background:rgba(255,204,0,0.1);color:var(--yellow);border:1px solid rgba(255,204,0,0.3);}
+.conf-label{font-family:var(--mono);font-size:0.62rem;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:4px;}
+.conf-bar{height:5px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden;margin-bottom:10px;}
 .conf-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--accent));border-radius:3px;transition:width 1s cubic-bezier(0.25,1,0.5,1);}
-.sec-label{font-family:var(--mono);font-size:0.62rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:5px;display:flex;align-items:center;gap:5px;}
-.sec-label::after{content:'';flex:1;height:1px;background:var(--border);}
-.root-cause{font-size:0.8rem;line-height:1.6;color:#c0d8f0;background:rgba(0,0,0,0.3);border-left:3px solid var(--accent);padding:8px 12px;margin-bottom:12px;}
-.reasoning{font-size:0.78rem;line-height:1.7;color:#8aaccc;margin-bottom:12px;}
-.cmd-block{background:#000812;border:1px solid var(--border2);border-radius:7px;overflow:hidden;margin-bottom:10px;}
-.cmd-hdr{display:flex;align-items:center;justify-content:space-between;padding:6px 12px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:0.62rem;color:var(--muted);}
-.cmd-body{padding:10px 14px;font-family:var(--mono);font-size:0.75rem;line-height:1.6;color:#b8f0d0;}
-.cmd-null{color:var(--muted);font-style:italic;display:flex;align-items:center;gap:6px;}
+.sl{font-family:var(--mono);font-size:0.6rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:5px;display:flex;align-items:center;gap:5px;}
+.sl::after{content:'';flex:1;height:1px;background:var(--border);}
+.root-cause{font-size:0.78rem;line-height:1.6;color:#c0d8f0;background:rgba(0,0,0,0.3);border-left:3px solid var(--accent);padding:8px 11px;margin-bottom:10px;}
+.reasoning{font-size:0.76rem;line-height:1.7;color:#8aaccc;margin-bottom:10px;}
+.cmd{background:#000812;border:1px solid var(--border2);border-radius:7px;overflow:hidden;margin-bottom:10px;}
+.cmd-hdr{display:flex;align-items:center;justify-content:space-between;padding:6px 11px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:0.6rem;color:var(--muted);}
+.cmd-body{padding:10px 13px;font-family:var(--mono);font-size:0.73rem;line-height:1.6;color:#b8f0d0;}
+.cmd-body.null-cmd{color:var(--muted);font-style:italic;display:flex;align-items:center;gap:6px;}
 .cmd-prompt{color:var(--green);}
-.fix-text{font-size:0.78rem;line-height:1.8;color:#8aaccc;white-space:pre-line;}
-.rollback{font-family:var(--mono);font-size:0.7rem;line-height:1.6;padding:8px 12px;background:rgba(255,122,48,0.05);border:1px solid rgba(255,122,48,0.15);border-radius:6px;color:#cc9060;}
-.github-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:6px;font-family:var(--mono);font-size:0.7rem;font-weight:700;background:rgba(0,255,157,0.1);border:1px solid rgba(0,255,157,0.3);color:var(--green);text-decoration:none;margin-top:8px;}
-.empty{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;min-height:200px;color:var(--muted);font-family:var(--mono);font-size:0.75rem;text-align:center;grid-column:1/-1;padding:20px;}
-.loading{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;min-height:200px;grid-column:1/-1;}
-.spinner{width:32px;height:32px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
-.err-box{padding:14px 18px;background:rgba(255,60,90,0.08);border:1px solid rgba(255,60,90,0.2);border-radius:7px;color:var(--red);font-family:var(--mono);font-size:0.72rem;line-height:1.6;grid-column:1/-1;margin:16px;}
+.fix-text{font-size:0.76rem;line-height:1.8;color:#8aaccc;white-space:pre-line;}
+.rollback{font-family:var(--mono);font-size:0.68rem;line-height:1.6;padding:8px 11px;background:rgba(255,122,48,0.05);border:1px solid rgba(255,122,48,0.15);border-radius:6px;color:#cc9060;}
+.sig-box{background:rgba(0,255,157,0.04);border:1px solid rgba(0,255,157,0.15);border-radius:6px;padding:8px 11px;margin-top:8px;font-family:var(--mono);font-size:0.62rem;color:var(--green);line-height:1.6;}
+.gh-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:6px;font-family:var(--mono);font-size:0.68rem;font-weight:700;background:rgba(0,255,157,0.1);border:1px solid rgba(0,255,157,0.3);color:var(--green);text-decoration:none;margin-top:8px;}
+.empty{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;min-height:180px;color:var(--muted);font-family:var(--mono);font-size:0.72rem;text-align:center;grid-column:1/-1;padding:20px;}
+.loading{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;min-height:180px;grid-column:1/-1;}
+.spinner{width:30px;height:30px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
+.err-box{padding:14px 16px;background:rgba(255,60,90,0.08);border:1px solid rgba(255,60,90,0.2);border-radius:7px;color:var(--red);font-family:var(--mono);font-size:0.72rem;line-height:1.7;grid-column:1/-1;margin:14px;}
+.ai{display:flex;align-items:flex-start;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:0.65rem;}
+.ai:last-child{border-bottom:none;}
+.ai-time{color:var(--muted);min-width:76px;}
+.ai-text{color:var(--text);flex:1;line-height:1.5;}
 
-/* Audit trail */
-.audit-list{padding:0;}
-.audit-item{display:flex;align-items:flex-start;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:0.68rem;}
-.audit-item:last-child{border-bottom:none;}
-.audit-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px;}
-.audit-time{color:var(--muted);min-width:80px;}
-.audit-text{color:var(--text);flex:1;}
-.audit-role{padding:1px 6px;border-radius:3px;font-size:0.6rem;font-weight:700;}
-
-::-webkit-scrollbar{width:4px;}
-::-webkit-scrollbar-track{background:transparent;}
-::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+/* Modals */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.overlay.hidden{display:none;}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:2rem;max-width:480px;width:90%;animation:slideUp 0.3s ease;}
+.modal-icon{font-size:2.5rem;margin-bottom:1rem;}
+.modal-title{font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:0.5rem;}
+.modal-sub{font-size:0.8rem;color:var(--muted);line-height:1.7;margin-bottom:1.2rem;}
+.modal-sub strong{color:var(--yellow);}
+.modal-btn{width:100%;padding:11px;border-radius:8px;font-family:var(--mono);font-size:0.75rem;font-weight:700;letter-spacing:0.08em;cursor:pointer;margin-bottom:8px;}
+.btn-p{background:linear-gradient(135deg,rgba(176,109,255,0.3),rgba(176,109,255,0.15));border:1px solid var(--admin);color:var(--admin);}
+.btn-p:hover{background:linear-gradient(135deg,rgba(176,109,255,0.4),rgba(176,109,255,0.25));}
+.btn-s{background:transparent;border:1px solid var(--border);color:var(--muted);}
+.btn-s:hover{border-color:var(--border2);color:var(--text);}
+.mfa-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:4px;background:rgba(255,204,0,0.1);border:1px solid rgba(255,204,0,0.3);color:var(--yellow);font-family:var(--mono);font-size:0.65rem;font-weight:700;margin-bottom:1rem;}
+.consent-list{list-style:none;margin:0.8rem 0 1rem;}
+.consent-list li{font-size:0.78rem;color:var(--muted);line-height:1.7;padding:2px 0;display:flex;align-items:flex-start;gap:8px;}
+.consent-list li::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0;}
+.consent-list li.deny::before{content:'✗';color:var(--red);}
+.consent-list li.deny{color:rgba(255,60,90,0.7);}
+.consent-info{padding:10px 14px;background:rgba(0,229,255,0.06);border:1px solid rgba(0,229,255,0.2);border-radius:6px;font-size:0.73rem;color:var(--accent);line-height:1.6;margin-bottom:1rem;}
 </style>
 </head>
 <body>
 
+<!-- Step-up MFA Modal -->
+<div class="overlay hidden" id="mfaOverlay">
+  <div class="modal">
+    <div class="modal-icon">🔐</div>
+    <div class="mfa-badge">⚠ CRITICAL SEVERITY — MFA REQUIRED</div>
+    <div class="modal-title">Multi-Factor Authentication Required</div>
+    <div class="modal-sub">
+      This incident is classified as <strong>CRITICAL severity</strong>.
+      Auth0 requires you to verify your identity with a second factor before
+      Cerberus can issue executable bash commands at this privilege level.<br><br>
+      You will complete MFA (push notification or OTP) and return automatically.
+    </div>
+    <button class="modal-btn btn-p" onclick="proceedMFA()">🔐 Complete MFA &amp; Authorize</button>
+    <button class="modal-btn btn-s" onclick="dismissMFA()">Cancel — show explanation only</button>
+  </div>
+</div>
+
+<!-- GitHub Progressive Consent Modal -->
+<div class="overlay hidden" id="ghOverlay">
+  <div class="modal">
+    <div class="modal-icon">📋</div>
+    <div class="modal-title">Open a GitHub Issue?</div>
+    <div class="consent-info">
+      Cerberus uses <strong>Auth0 Token Vault</strong> to access GitHub on your behalf.
+      Your token is stored inside Auth0's secure vault — never in our database or code.
+    </div>
+    <div class="modal-sub">We will only use this access to:</div>
+    <ul class="consent-list">
+      <li>Create one incident report issue in your repository</li>
+      <li>Add severity labels, root cause, and remediation details</li>
+      <li>Assign the issue to you automatically</li>
+      <li class="deny">Read your private repositories or source code</li>
+      <li class="deny">Make commits or modify your codebase</li>
+      <li class="deny">Access anything beyond this single issue</li>
+    </ul>
+    <div style="font-size:0.7rem;color:var(--muted);margin-bottom:1rem;line-height:1.6;">
+      Scope: <code style="color:var(--accent);font-family:var(--mono)">public_repo</code> only.
+      Revoke anytime: GitHub → Settings → Applications.
+    </div>
+    <button class="modal-btn btn-p" onclick="proceedGitHub()">✓ Authorize GitHub Access</button>
+    <button class="modal-btn btn-s" onclick="dismissGitHub()">No thanks — skip GitHub issue</button>
+  </div>
+</div>
+
 <header>
   <div class="logo">
     <div class="logo-icon">⚡</div>
-    <div>
-      <div>CERBERUS</div>
-      <div class="logo-sub">Secure Autonomous IT Remediation Agent</div>
-    </div>
+    <div><div>CERBERUS</div><div class="logo-sub">Zero-Trust IT Remediation · v2.0</div></div>
   </div>
   <div class="header-right">
-    <div style="display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:0.68rem;color:var(--muted);">
-      <div class="status-dot"></div>
-      <span id="apiStatus">LIVE · Vertex AI</span>
+    <div style="display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:0.65rem;color:var(--muted);">
+      <div class="status-dot"></div><span id="apiStatus">LIVE</span>
     </div>
     <div class="user-badge">
-      <span id="userName" style="color:var(--text)">Loading...</span>
+      <span id="userName" style="color:var(--text)">...</span>
       <span class="role-pill" id="rolePill">...</span>
     </div>
     <a href="/logout" class="logout-btn">Logout</a>
@@ -140,329 +182,383 @@ header{position:sticky;top:0;z-index:100;border-bottom:1px solid var(--border);b
 </header>
 
 <div class="app">
-
-  <!-- Sidebar -->
   <div class="sidebar">
-
-    <!-- Scenarios -->
     <div class="panel">
-      <div class="panel-header"><div class="dot" style="background:var(--yellow)"></div>Quick Scenarios</div>
+      <div class="ph"><div class="dot" style="background:var(--yellow)"></div>Scenarios</div>
       <div class="log-form">
-        <div class="scenario-list" id="scenarioList"></div>
-        <div class="or-label">── or type your own ──</div>
-        <label class="form-label">Log text</label>
-        <textarea class="log-textarea" id="logText" placeholder="Paste your system log here..."></textarea>
-        <label class="form-label" style="margin-top:8px">Service name</label>
-        <input class="service-input" id="serviceName" placeholder="nginx, postgresql, app..." value="unknown">
-        <label class="form-label">GitHub repo (optional — for auto issue creation)</label>
-        <input class="service-input" id="githubRepo" placeholder="shubhayu-dev/Cerberus" style="margin-bottom:10px">
+        <div id="scList"></div>
+        <label class="fl">Custom log</label>
+        <textarea class="log-ta" id="logText" placeholder="Paste system log here..."></textarea>
+        <label class="fl">Service name</label>
+        <input class="inp" id="serviceName" value="unknown">
+        <label class="fl">GitHub repo <span style="color:var(--border2)">(optional — consent shown after analysis)</span></label>
+        <input class="inp" id="githubRepo" placeholder="username/repo">
         <button class="analyze-btn" id="analyzeBtn" onclick="runAnalysis()">▶ ANALYZE LOG</button>
       </div>
     </div>
-
-    <!-- Role info -->
     <div class="panel">
-      <div class="panel-header"><div class="dot" style="background:var(--admin)"></div>Your Permission Level</div>
-      <div style="padding:14px 16px;">
-        <div id="roleExplain" style="font-size:0.78rem;color:var(--muted);line-height:1.7;">Loading role information...</div>
+      <div class="ph"><div class="dot" style="background:var(--admin)"></div>Permission Level</div>
+      <div style="padding:14px 16px;" id="roleExplain">
+        <div style="font-family:var(--mono);font-size:0.68rem;color:var(--muted)">Loading...</div>
       </div>
     </div>
-
   </div>
 
-  <!-- Main area -->
   <div class="main-area">
-
-    <!-- Metrics -->
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;">
-      <div class="metric-card">
-        <div class="metric-label">Requests</div>
-        <div class="metric-val" id="metricRequests">0</div>
-        <div class="metric-sub">this session</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Failures Found</div>
-        <div class="metric-val" id="metricFailures" style="color:var(--red)">0</div>
-        <div class="metric-sub">detected</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Avg Confidence</div>
-        <div class="metric-val" id="metricConfidence" style="color:var(--green)">—</div>
-        <div class="metric-sub">AI accuracy</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">GitHub Issues</div>
-        <div class="metric-val" id="metricIssues" style="color:var(--admin)">0</div>
-        <div class="metric-sub">auto-created</div>
-      </div>
+    <div class="metrics">
+      <div class="mc"><div class="ml">Requests</div><div class="mv" id="mReq">0</div><div class="ms">this session</div></div>
+      <div class="mc"><div class="ml">Failures found</div><div class="mv" id="mFail" style="color:var(--red)">0</div><div class="ms">detected</div></div>
+      <div class="mc"><div class="ml">Avg confidence</div><div class="mv" id="mConf" style="color:var(--green)">—</div><div class="ms">AI accuracy</div></div>
+      <div class="mc"><div class="ml">Commands blocked</div><div class="mv" id="mBlock" style="color:var(--yellow)">0</div><div class="ms">by filter</div></div>
     </div>
 
-    <!-- Result -->
-    <div class="result-card" id="resultCard">
-      <div class="result-header">
-        <span><span class="dot" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-right:6px;vertical-align:middle;"></span>Remediation Output</span>
-        <span id="permBadge" style="font-family:var(--mono);font-size:0.68rem;"></span>
+    <div class="result-card">
+      <div class="rh">
+        <span><span class="dot" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-right:6px;vertical-align:middle;"></span>Remediation Output — Zero-Trust Pipeline</span>
+        <span id="permBadge" style="font-family:var(--mono);font-size:0.65rem;"></span>
       </div>
-      <div class="result-body" id="resultBody">
+      <div class="rb" id="resultBody">
         <div class="empty">
           <div style="font-size:2rem;opacity:0.3">🤖</div>
-          <div>Select a scenario or paste a log and click Analyze</div>
-          <div style="color:var(--border2);font-size:0.62rem;margin-top:4px">Connected to Cloud Run · Vertex AI Gemini 2.5 Flash</div>
+          <div>Select a scenario and click Analyze</div>
+          <div style="color:var(--border2);font-size:0.6rem;margin-top:4px">PII scrub → Auth0 RBAC → Vertex AI → AntiHallucination filter → RSA-PSS sign</div>
         </div>
       </div>
     </div>
 
-    <!-- Audit Trail -->
     <div class="panel">
-      <div class="panel-header"><div class="dot" style="background:var(--green)"></div>Audit Trail<span style="margin-left:auto;color:var(--border2);font-size:0.62rem" id="auditCount">0 events</span></div>
-      <div class="audit-list" id="auditList">
-        <div style="padding:16px;font-family:var(--mono);font-size:0.7rem;color:var(--muted);text-align:center;">No events yet — analyze a log to start</div>
-      </div>
+      <div class="ph"><div class="dot" style="background:var(--green)"></div>Security Audit Trail<span style="margin-left:auto;color:var(--border2);font-size:0.6rem" id="auditCount">0 events</span></div>
+      <div id="auditList"><div style="padding:14px 16px;font-family:var(--mono);font-size:0.68rem;color:var(--muted);text-align:center;">No events yet</div></div>
     </div>
-
   </div>
 </div>
 
 <script>
-let sessionData = { requests:0, failures:0, confidences:[], issues:0 };
-let auditEvents = [];
-let userInfo = {};
+const S = { req:0, fail:0, conf:[], blocked:0 };
+let auditEvents    = [];
+let userInfo       = {};
+let pendingReq     = null;
+let mfaAuthUrl     = null;
+let mfaVerified    = false;
 
 const SCENARIOS = [
-  { id:"nginx", name:"Nginx Port Conflict", service:"nginx", severity:"critical",
-    log:`2024-01-15 03:42:17 [emerg] 1234#1234: bind() to 0.0.0.0:80 failed (98: Address already in use)\n2024-01-15 03:42:17 [emerg] still could not bind\nnginx: exited with code 1` },
-  { id:"disk", name:"Disk Space Exhausted", service:"postgresql", severity:"critical",
-    log:`2024-01-15 04:15:32 FATAL: could not write to file: No space left on device\nkernel: EXT4-fs error: ENOSPC\npostgresql.service: Main process exited, code=killed` },
-  { id:"perm", name:"Permission Denied", service:"app-daemon", severity:"high",
-    log:`2024-01-15 05:01:44 ERROR: Failed to open /var/run/app/app.sock: Permission denied\nCRITICAL: Cannot bind Unix socket — Operation not permitted\napp-daemon.service: Failed to start` },
+  { id:"nginx", name:"Nginx Port Conflict",  service:"nginx",      severity:"high",
+    log:"2024-01-15 03:42:17 [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)\nnginx: exited with code 1" },
+  { id:"disk",  name:"Disk Space Exhausted", service:"postgresql",  severity:"critical",
+    log:"2024-01-15 04:15:32 FATAL: No space left on device\nkernel: ENOSPC\npostgresql.service: exited, code=killed" },
+  { id:"perm",  name:"Permission Denied",    service:"app-daemon",  severity:"high",
+    log:"2024-01-15 05:01:44 ERROR: Failed to open /var/run/app/app.sock: Permission denied\napp-daemon.service: Failed to start" },
 ];
 
-// Init
 (async function init() {
   buildScenarios();
-  await loadUserInfo();
+  await loadUser();
   checkHealth();
 })();
 
-async function loadUserInfo() {
+async function loadUser() {
   try {
-    const r = await fetch('/me', { credentials: 'include' });
+    const r = await fetch('/me', { credentials:'include' });
     if (r.status === 401) { window.location.href = '/'; return; }
     userInfo = await r.json();
-
-    // Update header
-    document.getElementById('userName').textContent = userInfo.email !== 'unknown'
-      ? userInfo.email : `github|${userInfo.sub?.split('|')[1] || ''}`;
-
-    const pill = document.getElementById('rolePill');
+    const id = userInfo.sub?.split('|')[1] || '';
+    document.getElementById('userName').textContent =
+      userInfo.email !== 'unknown' ? userInfo.email : `github|${id}`;
+    const pill    = document.getElementById('rolePill');
     const isAdmin = userInfo.is_admin;
     pill.textContent = isAdmin ? 'ADMIN' : 'USER';
-    pill.className = `role-pill ${isAdmin ? 'role-pill-admin' : 'role-pill-user'}`;
-
-    // Role explanation
+    pill.className   = `role-pill ${isAdmin ? 'role-admin' : 'role-user'}`;
     document.getElementById('roleExplain').innerHTML = isAdmin
-      ? `<span style="color:var(--admin);font-weight:600">🔑 Admin</span><br><br>
-         You have full remediation access. The AI will provide:<br>
-         • Root cause diagnosis<br>
-         • Executable bash commands<br>
-         • Rollback procedures<br>
-         • Auto GitHub issue creation`
-      : `<span style="color:var(--user);font-weight:600">👤 User</span><br><br>
-         You have read-only access. The AI will provide:<br>
-         • Root cause explanation<br>
-         • Manual remediation steps<br>
-         • No executable commands<br><br>
-         <span style="color:var(--muted)">Contact your admin to upgrade role.</span>`;
-  } catch(e) {
-    window.location.href = '/';
-  }
+      ? `<div style="color:var(--admin);font-weight:600;font-family:var(--mono);font-size:0.75rem;margin-bottom:8px">🔑 Admin</div>
+         <div style="font-size:0.73rem;color:var(--muted);line-height:1.8">
+           • Executable bash commands<br>
+           • AntiHallucinationFilter validation<br>
+           • RSA-PSS cryptographic signing<br>
+           • Step-up MFA for critical incidents
+         </div>`
+      : `<div style="color:var(--user);font-weight:600;font-family:var(--mono);font-size:0.75rem;margin-bottom:8px">👤 User</div>
+         <div style="font-size:0.73rem;color:var(--muted);line-height:1.8">
+           • Root cause explanation<br>
+           • Manual remediation steps<br>
+           • No executable commands
+         </div>`;
+  } catch(e) { window.location.href = '/'; }
 }
 
 async function checkHealth() {
   try {
-    const r = await fetch('/');
+    const r = await fetch('/health');
     const d = await r.json();
     document.getElementById('apiStatus').textContent =
-      d.status === 'operational' ? 'LIVE · Vertex AI' : 'DEGRADED';
+      d.status === 'operational' ? 'LIVE · v2.0' : 'DEGRADED';
   } catch(e) {
     document.getElementById('apiStatus').textContent = 'OFFLINE';
   }
 }
 
 function buildScenarios() {
-  document.getElementById('scenarioList').innerHTML = SCENARIOS.map(s => `
-    <button class="scenario-btn" id="sc-${s.id}" onclick="selectScenario('${s.id}')">
-      <div class="s-name">${s.name}</div>
-      <div class="s-svc">svc:${s.service}</div>
-      <span class="s-badge badge-${s.severity}">${s.severity.toUpperCase()}</span>
+  document.getElementById('scList').innerHTML = SCENARIOS.map(s => `
+    <button class="sc-btn" id="sc-${s.id}" onclick="selectSc('${s.id}')">
+      <div class="sn">${s.name}</div>
+      <div class="ss">svc:${s.service}</div>
+      <span class="sb ${s.severity==='critical'?'sb-c':'sb-h'}">${s.severity.toUpperCase()}</span>
     </button>`).join('');
 }
 
-function selectScenario(id) {
+function selectSc(id) {
   const s = SCENARIOS.find(x => x.id === id);
-  document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.sc-btn').forEach(b => b.classList.remove('active'));
   document.getElementById(`sc-${id}`).classList.add('active');
-  document.getElementById('logText').value = s.log;
+  document.getElementById('logText').value    = s.log;
   document.getElementById('serviceName').value = s.service;
 }
 
-async function runAnalysis() {
-  const logText = document.getElementById('logText').value.trim();
+async function runAnalysis(withMfa = false) {
+  const logText     = document.getElementById('logText').value.trim();
   const serviceName = document.getElementById('serviceName').value.trim() || 'unknown';
-  const githubRepo = document.getElementById('githubRepo').value.trim();
-
+  const githubRepo  = document.getElementById('githubRepo').value.trim();
   if (!logText) { alert('Paste a log first.'); return; }
+
+  pendingReq = { logText, serviceName, githubRepo, withMfa };
 
   const btn = document.getElementById('analyzeBtn');
   btn.disabled = true; btn.textContent = '⏳ ANALYZING...';
-
   document.getElementById('resultBody').innerHTML = `
     <div class="loading">
       <div class="spinner"></div>
-      <div style="font-family:var(--mono);font-size:0.75rem;color:var(--muted)">Cerberus analyzing · Vertex AI Gemini 2.5 Flash</div>
+      <div style="font-family:var(--mono);font-size:0.72rem;color:var(--muted)">
+        Scrubbing PII → Auth0 RBAC → Vertex AI → AntiHallucination → RSA-PSS sign
+      </div>
     </div>`;
   document.getElementById('permBadge').textContent = '';
 
   try {
-    const body = { log_text: logText, service_name: serviceName, environment: 'production' };
-    if (githubRepo) body.github_repo = githubRepo;
+    const body = {
+      log_text: logText, service_name: serviceName,
+      environment: 'production', mfa_verified: withMfa,
+    };
+    // Progressive onboarding: DON'T include github_repo on first request.
+    // We show the consent modal AFTER the analysis succeeds.
+    // Only include it if we're retrying after GitHub consent was granted.
+    if (withMfa && githubRepo) body.github_repo = githubRepo;
 
     const resp = await fetch('/logs/analyze', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify(body)
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      credentials: 'include', body: JSON.stringify(body),
     });
-
     const json = await resp.json();
+
+    // Step-up MFA required
+    if (resp.status === 403 && json.error?.stepup_required) {
+      mfaAuthUrl = json.error.auth_url;
+      showMFAModal();
+      btn.disabled = false; btn.textContent = '▶ ANALYZE LOG'; return;
+    }
 
     if (!resp.ok) {
       document.getElementById('resultBody').innerHTML = `
-        <div class="err-box">Error ${resp.status}: ${json.error}<br>
-        ${resp.status === 401 ? '<a href="/login" style="color:var(--accent)">Re-login to refresh token</a>' : ''}</div>`;
-      btn.disabled=false; btn.textContent='▶ ANALYZE LOG'; return;
+        <div class="err-box">Error ${resp.status}: ${JSON.stringify(json.error)}<br>
+        ${resp.status === 401 ? '<a href="/login" style="color:var(--accent)">Re-login</a>' : ''}</div>`;
+      btn.disabled = false; btn.textContent = '▶ ANALYZE LOG'; return;
     }
 
-    // Update metrics
-    sessionData.requests++;
-    if (json.failure_detected) sessionData.failures++;
-    if (json.remediation?.confidence) sessionData.confidences.push(json.remediation.confidence);
-    if (json.github_issue) sessionData.issues++;
-    updateMetrics();
-
-    // Add to audit trail
-    addAuditEvent(json);
-
-    // Render result
+    updateMetrics(json);
+    addAudit(json);
     renderResult(json);
 
+    // Progressive GitHub onboarding:
+    // Analysis succeeded → now offer GitHub issue creation if repo was provided
+    // and no issue was created (user hasn't authorized yet)
+    if (githubRepo && json.failure_detected && !json.github_issue) {
+      setTimeout(() => showGHModal(), 1200);
+    }
+
   } catch(e) {
-    document.getElementById('resultBody').innerHTML = `<div class="err-box">Network error: ${e.message}</div>`;
+    document.getElementById('resultBody').innerHTML =
+      `<div class="err-box">Network error: ${e.message}</div>`;
   }
-
-  btn.disabled=false; btn.textContent='▶ ANALYZE LOG';
+  btn.disabled = false; btn.textContent = '▶ ANALYZE LOG';
 }
 
-function updateMetrics() {
-  document.getElementById('metricRequests').textContent = sessionData.requests;
-  document.getElementById('metricFailures').textContent = sessionData.failures;
-  document.getElementById('metricIssues').textContent = sessionData.issues;
-  const avg = sessionData.confidences.length
-    ? Math.round(sessionData.confidences.reduce((a,b)=>a+b,0)/sessionData.confidences.length) + '%'
-    : '—';
-  document.getElementById('metricConfidence').textContent = avg;
+// ── MFA Modal ──────────────────────────────────────────────────────────────
+function showMFAModal() { document.getElementById('mfaOverlay').classList.remove('hidden'); }
+
+function proceedMFA() {
+  document.getElementById('mfaOverlay').classList.add('hidden');
+  const ok = confirm(
+    'In production: redirects to Auth0 MFA (push/OTP).\n' +
+    'After completion, token contains acr=mfa claim.\n\n' +
+    'For demo: click OK to simulate MFA completion and retry.'
+  );
+  if (ok) { mfaVerified = true; runAnalysis(true); }
 }
 
-function addAuditEvent(json) {
+function dismissMFA() {
+  document.getElementById('mfaOverlay').classList.add('hidden');
+}
+
+// ── GitHub Consent Modal ───────────────────────────────────────────────────
+function showGHModal() { document.getElementById('ghOverlay').classList.remove('hidden'); }
+
+async function proceedGitHub() {
+  document.getElementById('ghOverlay').classList.add('hidden');
+  try {
+    const r = await fetch('/auth/github-consent-url', { credentials:'include' });
+    const d = await r.json();
+    const ok = confirm(
+      'In production: redirects to Auth0 → GitHub OAuth consent (scope: public_repo only).\n\n' +
+      'For demo: click OK to simulate consent and create the GitHub issue.'
+    );
+    if (ok && pendingReq) {
+      const btn = document.getElementById('analyzeBtn');
+      btn.disabled = true; btn.textContent = '⏳ Creating issue...';
+      const body = {
+        log_text: pendingReq.logText, service_name: pendingReq.serviceName,
+        environment: 'production', github_repo: pendingReq.githubRepo,
+        mfa_verified: mfaVerified,
+      };
+      const resp = await fetch('/logs/analyze', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        credentials:'include', body:JSON.stringify(body),
+      });
+      const json = await resp.json();
+      if (resp.ok) { updateMetrics(json); addAudit(json); renderResult(json); }
+      btn.disabled = false; btn.textContent = '▶ ANALYZE LOG';
+    }
+  } catch(e) { console.error(e); }
+}
+
+function dismissGitHub() { document.getElementById('ghOverlay').classList.add('hidden'); }
+
+// ── Metrics ────────────────────────────────────────────────────────────────
+function updateMetrics(json) {
+  S.req++;
+  if (json.failure_detected) S.fail++;
+  if (json.remediation?.confidence) S.conf.push(json.remediation.confidence);
+  if (json.security_audit?.filter?.original_command_blocked) S.blocked++;
+  document.getElementById('mReq').textContent   = S.req;
+  document.getElementById('mFail').textContent  = S.fail;
+  document.getElementById('mBlock').textContent = S.blocked;
+  const avg = S.conf.length
+    ? Math.round(S.conf.reduce((a,b)=>a+b,0)/S.conf.length)+'%' : '—';
+  document.getElementById('mConf').textContent = avg;
+}
+
+// ── Audit Trail ────────────────────────────────────────────────────────────
+function addAudit(json) {
   auditEvents.unshift(json);
-  if (auditEvents.length > 20) auditEvents.pop();
+  if (auditEvents.length > 30) auditEvents.pop();
   document.getElementById('auditCount').textContent = `${auditEvents.length} events`;
-
-  const el = document.getElementById('auditList');
-  el.innerHTML = auditEvents.map(e => {
-    const isAdmin = e.permission_level === 'admin';
-    const time = new Date(e.timestamp).toLocaleTimeString('en-US',{hour12:false});
-    const color = e.failure_detected ? (e.failure_category === 'disk_full' ? 'var(--red)' : 'var(--orange)') : 'var(--green)';
-    return `<div class="audit-item">
-      <div class="audit-dot" style="background:${color}"></div>
-      <div class="audit-time">${time}</div>
-      <div class="audit-text">
-        req:${e.request_id} · ${e.service_name} · 
-        ${e.failure_detected ? e.failure_category : 'no failure'} · 
-        ${e.remediation?.confidence || 0}% confidence
-        ${e.github_issue ? ` · <a href="${e.github_issue.url}" target="_blank" style="color:var(--green)">Issue #${e.github_issue.number}</a>` : ''}
+  document.getElementById('auditList').innerHTML = auditEvents.map(e => {
+    const isAdmin  = e.permission_level === 'admin';
+    const time     = new Date(e.timestamp).toLocaleTimeString('en-US',{hour12:false});
+    const color    = e.failure_detected
+      ? (e.failure_category==='disk_full'?'var(--red)':'var(--orange)') : 'var(--green)';
+    const filter   = e.security_audit?.filter;
+    const fBadge   = filter?.original_command_blocked
+      ? ' · <span style="color:var(--red)">⛔ BLOCKED</span>'
+      : filter?.passed ? ' · <span style="color:var(--green)">✓ OK</span>' : '';
+    const sBadge   = e.signed_payload ? ' · <span style="color:var(--green)">✍</span>' : '';
+    const mBadge   = e.audit_trail?.mfa_verified ? ' · <span style="color:var(--yellow)">🔐</span>' : '';
+    const gh       = e.github_issue
+      ? ` · <a href="${e.github_issue.url}" target="_blank" style="color:var(--green)">#${e.github_issue.number}</a>` : '';
+    return `<div class="ai">
+      <div class="dot" style="background:${color};flex-shrink:0;margin-top:3px"></div>
+      <div class="ai-time">${time}</div>
+      <div class="ai-text">
+        req:${e.request_id} · ${e.service_name} ·
+        ${e.failure_detected ? e.failure_category : 'healthy'} ·
+        ${e.remediation?.confidence||0}%${fBadge}${sBadge}${mBadge}${gh}
       </div>
-      <span class="audit-role ${isAdmin ? 'chip-admin' : 'chip-user'}" style="padding:1px 6px;border-radius:3px;font-size:0.6rem;font-weight:700;background:${isAdmin?'rgba(176,109,255,0.15)':'rgba(0,204,255,0.15)'};color:${isAdmin?'var(--admin)':'var(--user)'}">
-        ${isAdmin ? 'ADMIN' : 'USER'}
+      <span style="padding:1px 6px;border-radius:3px;font-size:0.58rem;font-weight:700;flex-shrink:0;
+        background:${isAdmin?'rgba(176,109,255,0.15)':'rgba(0,204,255,0.15)'};
+        color:${isAdmin?'var(--admin)':'var(--user)'}">
+        ${isAdmin?'ADMIN':'USER'}
       </span>
     </div>`;
   }).join('');
 }
 
+// ── Render Result ──────────────────────────────────────────────────────────
 function renderResult(json) {
-  const d = json.remediation;
+  const d       = json.remediation;
   const isAdmin = json.permission_level === 'admin';
-  const permColor = isAdmin ? 'var(--admin)' : 'var(--user)';
+  const pColor  = isAdmin ? 'var(--admin)' : 'var(--user)';
 
   if (!json.failure_detected) {
     document.getElementById('permBadge').textContent = '';
     document.getElementById('resultBody').innerHTML = `
-      <div class="empty">
-        <div style="font-size:1.5rem">✅</div>
-        <div style="color:var(--green)">No failure detected</div>
-        <div style="color:var(--muted);font-size:0.65rem">Log appears healthy — no remediation needed</div>
-      </div>`;
+      <div class="empty"><div style="font-size:1.5rem">✅</div>
+      <div style="color:var(--green)">No failure detected</div>
+      <div style="color:var(--muted);font-size:0.62rem">Log appears healthy</div></div>`;
     return;
   }
 
   document.getElementById('permBadge').innerHTML =
-    `<span style="color:${permColor};font-weight:700">${isAdmin ? '🔑 ADMIN — COMMANDS ENABLED' : '👤 USER — EXPLANATION ONLY'}</span>`;
+    `<span style="color:${pColor};font-weight:700">${isAdmin?'🔑 ADMIN — COMMANDS ENABLED':'👤 USER — EXPLANATION ONLY'}</span>`;
 
-  const sevClass = d.severity === 'critical' ? 'chip-critical' : 'chip-high';
-  const permClass = isAdmin ? 'chip-admin' : 'chip-user';
+  const sevClass = d.severity === 'critical' ? 'chip-crit' : 'chip-high';
+  const pClass   = isAdmin ? 'chip-admin' : 'chip-user';
+  const fa       = json.security_audit?.filter || {};
 
-  const githubHtml = json.github_issue
-    ? `<a class="github-badge" href="${json.github_issue.url}" target="_blank">↗ GitHub Issue #${json.github_issue.number} auto-created</a>`
-    : '';
+  const chips = [
+    `<span class="chip ${sevClass}">⚠ ${d.severity}</span>`,
+    `<span class="chip ${pClass}">${json.permission_level.toUpperCase()}</span>`,
+    `<span class="chip chip-gray">req:${json.request_id}</span>`,
+    fa.original_command_blocked ? `<span class="chip chip-red">⛔ BLOCKED</span>` : '',
+    fa.passed && !fa.original_command_blocked ? `<span class="chip chip-green">✓ FILTER</span>` : '',
+    json.audit_trail?.mfa_verified ? `<span class="chip chip-yellow">🔐 MFA</span>` : '',
+    json.signed_payload ? `<span class="chip chip-green">✍ SIGNED</span>` : '',
+  ].filter(Boolean).join('');
+
+  // Command section
+  const blocked   = d.command_blocked;
+  const hasCmd    = isAdmin && d.command && !blocked;
+  const cmdLabel  = hasCmd ? '// BASH — ADMIN AUTHORIZED' : blocked ? '// COMMAND BLOCKED — FILTER' : '// COMMANDS RESTRICTED';
+  const cmdColor  = hasCmd ? 'var(--green)' : blocked ? 'var(--red)' : 'var(--user)';
+  const cmdBadge  = hasCmd ? 'FILTER APPROVED · SIGNED' : blocked ? 'ANTI-HALLUCINATION' : isAdmin ? 'MFA REQUIRED' : 'USER ROLE';
+  const cmdBody   = hasCmd
+    ? `<div class="cmd-body"><span class="cmd-prompt">$</span>${d.command}</div>`
+    : blocked
+    ? `<div class="cmd-body null-cmd">⛔ ${d.block_reason||'Failed security filter'}</div>`
+    : `<div class="cmd-body null-cmd">🔒 ${isAdmin?'Complete MFA to unlock commands':'Executable commands require admin role'}</div>`;
+
+  const sigHtml = json.signed_payload ? `
+    <div class="sig-box">
+      ✍ RSA-PSS Signed Payload<br>
+      Algorithm: ${json.signed_payload.algorithm}<br>
+      Key source: ${json.signed_payload.metadata?.key_source||'ephemeral_local_dev'}<br>
+      Signature: ${json.signed_payload.signature?.substring(0,48)}...
+    </div>` : '';
+
+  const ghHtml = json.github_issue
+    ? `<a class="gh-badge" href="${json.github_issue.url}" target="_blank">↗ Issue #${json.github_issue.number} created via Token Vault</a>` : '';
 
   document.getElementById('resultBody').innerHTML = `
-    <div class="result-left" style="animation:fadeIn 0.4s ease">
-      <div class="issue-title">${d.issue}</div>
-      <div class="meta-row">
-        <span class="meta-chip ${sevClass}">⚠ ${d.severity}</span>
-        <span class="meta-chip ${permClass}">${json.permission_level.toUpperCase()}</span>
-        <span class="meta-chip" style="background:rgba(0,229,255,0.08);color:var(--muted);border:1px solid var(--border)">req:${json.request_id}</span>
-      </div>
-      <div class="conf-wrap">
-        <div class="conf-label"><span>Confidence</span><span style="color:var(--green)">${d.confidence}%</span></div>
-        <div class="conf-bar"><div class="conf-fill" style="width:${d.confidence}%"></div></div>
-      </div>
-      <div class="sec-label">Root Cause</div>
+    <div class="rl" style="animation:fadeIn 0.4s ease">
+      <div class="it">${d.issue}</div>
+      <div class="mr2">${chips}</div>
+      <div class="conf-label"><span>Confidence</span><span style="color:var(--green)">${d.confidence}%</span></div>
+      <div class="conf-bar"><div class="conf-fill" style="width:${d.confidence}%"></div></div>
+      <div class="sl">Root Cause</div>
       <div class="root-cause">${d.root_cause}</div>
-      <div class="sec-label">Agent Reasoning</div>
+      <div class="sl">Agent Reasoning</div>
       <div class="reasoning">${d.reasoning}</div>
-      ${githubHtml}
+      ${ghHtml}
     </div>
-    <div class="result-right" style="animation:fadeIn 0.4s ease">
-      <div class="sec-label">${isAdmin ? '⚡ Executable Command' : '💡 Suggested Steps (Read-Only)'}</div>
-      <div class="cmd-block">
+    <div class="rr" style="animation:fadeIn 0.4s ease">
+      <div class="sl">${isAdmin?'⚡ Executable Command':'💡 Suggested Steps'}</div>
+      <div class="cmd">
         <div class="cmd-hdr">
-          <span style="color:${isAdmin?'var(--green)':'var(--user)'};font-weight:700">
-            ${isAdmin ? '// BASH — ADMIN AUTHORIZED' : '// COMMANDS RESTRICTED — USER ROLE'}
-          </span>
-          <span style="font-size:0.6rem;color:${isAdmin?'var(--green)':'var(--user)'}">
-            ${isAdmin ? 'EXECUTABLE' : 'READ-ONLY'}
-          </span>
+          <span style="color:${cmdColor};font-weight:700">${cmdLabel}</span>
+          <span style="color:${cmdColor};font-size:0.58rem">${cmdBadge}</span>
         </div>
-        <div class="cmd-body ${isAdmin && d.command ? '' : 'cmd-null'}">
-          ${isAdmin && d.command
-            ? `<span class="cmd-prompt">$</span>${d.command}`
-            : '🔒 Executable commands require admin role'}
-        </div>
+        ${cmdBody}
       </div>
-      <div class="sec-label" style="margin-top:14px">Manual Steps</div>
+      ${sigHtml}
+      <div class="sl" style="margin-top:12px">Manual Steps</div>
       <div class="fix-text">${d.suggested_fix}</div>
-      <div class="sec-label" style="margin-top:14px">⏪ Rollback</div>
+      <div class="sl" style="margin-top:12px">⏪ Rollback</div>
       <div class="rollback">${d.rollback}</div>
     </div>`;
 }
