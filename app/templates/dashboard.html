@@ -116,6 +116,17 @@ header{position:sticky;top:0;z-index:100;border-bottom:1px solid var(--border);b
 .consent-list li.deny::before{content:'✗';color:var(--red);}
 .consent-list li.deny{color:rgba(255,60,90,0.7);}
 .consent-info{padding:10px 14px;background:rgba(0,229,255,0.06);border:1px solid rgba(0,229,255,0.2);border-radius:6px;font-size:0.73rem;color:var(--accent);line-height:1.6;margin-bottom:1rem;}
+
+.verdict-box{background:rgba(0,229,255,0.04);border:1px solid rgba(0,229,255,0.15);border-left:3px solid var(--accent);border-radius:0 6px 6px 0;padding:10px 13px;margin-bottom:10px;font-size:0.76rem;color:var(--text);line-height:1.6;}
+.blast-box{background:rgba(255,122,48,0.06);border:1px solid rgba(255,122,48,0.2);border-left:3px solid var(--orange);border-radius:0 6px 6px 0;padding:10px 13px;margin-bottom:10px;font-size:0.76rem;color:#cc9060;line-height:1.6;}
+.risk-bar-wrap{margin-bottom:12px;}
+.risk-label{font-family:var(--mono);font-size:0.62rem;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:4px;}
+.risk-bar{height:5px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden;}
+.risk-fill{height:100%;border-radius:3px;transition:width 1s cubic-bezier(0.25,1,0.5,1);}
+.safe-alts{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;}
+.safe-alt-cmd{font-family:var(--mono);font-size:0.7rem;background:#000812;border:1px solid var(--border2);border-radius:5px;padding:6px 10px;color:var(--green);display:flex;align-items:center;gap:6px;}
+.safe-alt-cmd::before{content:'$';color:var(--muted);flex-shrink:0;}
+.mfa-required-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:5px;background:rgba(255,204,0,0.12);border:1px solid rgba(255,204,0,0.3);color:var(--yellow);font-family:var(--mono);font-size:0.65rem;font-weight:700;margin-bottom:10px;}
 </style>
 </head>
 <body>
@@ -254,26 +265,6 @@ const SCENARIOS = [
   buildScenarios();
   await loadUser();
   checkHealth();
-
-  // Auto-retry after MFA redirect completes
-  const mfaRetry = sessionStorage.getItem('mfa_retry');
-  if (mfaRetry === 'true') {
-    sessionStorage.removeItem('mfa_retry');
-    const saved = sessionStorage.getItem('mfa_pending');
-    if (saved) {
-      sessionStorage.removeItem('mfa_pending');
-      const req = JSON.parse(saved);
-      console.warn("SECURITY AUDIT: ✅ MFA complete — auto-retrying analysis...");
-
-      // Restore the form fields
-      document.getElementById('logText').value    = req.logText;
-      document.getElementById('serviceName').value = req.serviceName;
-      if (req.githubRepo) document.getElementById('githubRepo').value = req.githubRepo;
-
-      // Small delay so UI is ready, then retry with mfa_verified=true
-      setTimeout(() => runAnalysis(true), 800);
-    }
-  }
 })();
 
 async function loadUser() {
@@ -381,18 +372,24 @@ async function runAnalysis() {
     
     const json = await resp.json();
 
-    // ── MFA Step-up handler ───────────────────────────────────────────────
+    // ── FIXED NESTED MFA CATCHER ──────────────────────────────────────────
     if (resp.status === 403) {
-      // Backend returns: {"error": {"error": "mfa_required", "stepup_required": true}}
-      const errObj     = json.error || {};
-      const errCode    = typeof errObj === 'object' ? errObj.error : errObj;
-      const isMfaReq   = errCode === 'mfa_required' || errObj.stepup_required === true;
-
-      if (isMfaReq) {
-        console.warn("SECURITY AUDIT: 🚨 Step-Up MFA required — showing modal");
-        pendingReq = {logText, serviceName, githubRepo};
-        document.getElementById('mfaOverlay').classList.remove('hidden');
-        btn.disabled = false; btn.textContent = '▶ ANALYZE LOG';
+      // Your log showed: {error: {error: "mfa_required", ...}}
+      // This path safely drills down into that structure
+      const nestedError = json.error?.error || json.detail?.error || json.error;
+      
+      if (nestedError === 'mfa_required' || json.stepup_required) {
+        console.warn("SECURITY AUDIT: Step-Up MFA required.");
+        
+        // Safety check to ensure the function exists before calling
+        if (typeof showMFAModal === "function") {
+          showMFAModal();
+        } else {
+          // If the function is missing, we manually show the overlay
+          document.getElementById('mfaOverlay').classList.remove('hidden');
+        }
+        
+        btn.disabled = false; btn.textContent = '▶ ANALYZE LOG'; 
         return;
       }
     }
@@ -428,21 +425,13 @@ async function runAnalysis() {
 
 // ── TRIGGER BACKEND MFA ROUTE ──────────────────────────────────────────────
 function proceedMFA() {
+  // 1. Hide the custom UI modal
   document.getElementById('mfaOverlay').classList.add('hidden');
-  console.warn("SECURITY AUDIT: 🔐 Triggering Auth0 step-up MFA redirect...");
-
-  // If pendingReq is somehow null, try to scrape the UI one last time
-  const finalLog = pendingReq?.logText || document.getElementById('logText').value;
-  const finalSvc = pendingReq?.serviceName || document.getElementById('serviceName').value;
-  const finalRepo = pendingReq?.githubRepo || document.getElementById('githubRepo').value;
-
-  sessionStorage.setItem('mfa_pending', JSON.stringify({
-    logText:     finalLog,
-    serviceName: finalSvc,
-    githubRepo:  finalRepo
-  }));
-  sessionStorage.setItem('mfa_retry', 'true');
-
+  
+  console.warn("SECURITY AUDIT: Triggering backend /login/mfa route...");
+  
+  // 2. Redirect the browser to the new FastAPI route
+  // FastAPI will automatically append the 'acr_values' and send the user to Auth0
   window.location.href = '/login/mfa';
 }
 // ── GitHub Consent Modal ───────────────────────────────────────────────────
@@ -582,20 +571,50 @@ function renderResult(json) {
   const ghHtml = json.github_issue
     ? `<a class="gh-badge" href="${json.github_issue.url}" target="_blank">↗ Issue #${json.github_issue.number} created via Token Vault</a>` : '';
 
+  // Risk bar color: green < 30, yellow < 60, red >= 60
+  const riskScore = d.risk_assessment || 0;
+  const riskColor = riskScore < 30 ? 'var(--green)' : riskScore < 60 ? 'var(--yellow)' : 'var(--red)';
+
+  // Safe alternatives
+  const alts = d.safe_alternatives || [];
+  const altsHtml = alts.length
+    ? `<div class="safe-alts">${alts.map(a => `<div class="safe-alt-cmd">${a}</div>`).join('')}</div>`
+    : '';
+
+  // Security verdict
+  const verdictHtml = d.security_verdict
+    ? `<div class="sl">🔍 Security Verdict</div><div class="verdict-box">${d.security_verdict}</div>` : '';
+
+  // Blast radius
+  const blastHtml = d.blast_radius
+    ? `<div class="sl">💥 Blast Radius</div><div class="blast-box">${d.blast_radius}</div>` : '';
+
+  // MFA badge
+  const mfaBadge = d.requires_mfa
+    ? `<div class="mfa-required-badge">🔐 MFA REQUIRED — Critical severity detected</div>` : '';
+
   document.getElementById('resultBody').innerHTML = `
     <div class="rl" style="animation:fadeIn 0.4s ease">
       <div class="it">${d.issue}</div>
       <div class="mr2">${chips}</div>
-      <div class="conf-label"><span>Confidence</span><span style="color:var(--green)">${d.confidence}%</span></div>
+      ${mfaBadge}
+      <div class="conf-label"><span>AI Confidence</span><span style="color:var(--green)">${d.confidence}%</span></div>
       <div class="conf-bar"><div class="conf-fill" style="width:${d.confidence}%"></div></div>
+      <div class="risk-bar-wrap">
+        <div class="risk-label"><span>Risk Assessment</span><span style="color:${riskColor}">${riskScore}/100</span></div>
+        <div class="risk-bar"><div class="risk-fill" style="width:${riskScore}%;background:${riskColor}"></div></div>
+      </div>
       <div class="sl">Root Cause</div>
       <div class="root-cause">${d.root_cause}</div>
       <div class="sl">Agent Reasoning</div>
       <div class="reasoning">${d.reasoning}</div>
+      ${verdictHtml}
+      ${blastHtml}
       ${ghHtml}
     </div>
     <div class="rr" style="animation:fadeIn 0.4s ease">
-      <div class="sl">${isAdmin?'⚡ Executable Command':'💡 Suggested Steps'}</div>
+      <div class="sl">${isAdmin?'⚡ Executable Command':'🔍 Read-Only Diagnostics'}</div>
+      ${mfaBadge}
       <div class="cmd">
         <div class="cmd-hdr">
           <span style="color:${cmdColor};font-weight:700">${cmdLabel}</span>
@@ -604,6 +623,8 @@ function renderResult(json) {
         ${cmdBody}
       </div>
       ${sigHtml}
+      <div class="sl" style="margin-top:12px">✅ Safe Alternatives (run these first)</div>
+      ${altsHtml}
       <div class="sl" style="margin-top:12px">Manual Steps</div>
       <div class="fix-text">${d.suggested_fix}</div>
       <div class="sl" style="margin-top:12px">⏪ Rollback</div>
