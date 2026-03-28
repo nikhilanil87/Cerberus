@@ -271,10 +271,11 @@ async function createRealGitHubIssue(repoPath, analysisData) {
         'Content-Type': 'application/json',
         ...(accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {}),
       },
+      credentials: 'include', // <--- THIS IS THE FIX
       body: JSON.stringify({
         repo: repoPath,
         title: `🚨 CRITICAL: ${analysisData.service_name} Failure Detected`,
-      body: `### Auto-Generated Root Cause Analysis\n\n**Confidence:** ${analysisData.remediation?.confidence || 0}%\n\n**Diagnosis:**\n${analysisData.remediation?.root_cause || 'N/A'}\n\n**Proposed Remediation:**\n\n\`\`\`bash\n${analysisData.remediation?.command || 'No command generated'}\n\`\`\`\n`,
+        body: `### Auto-Generated Root Cause Analysis\n\n**Confidence:** ${analysisData.remediation?.confidence || 0}%\n\n**Diagnosis:**\n${analysisData.remediation?.root_cause || 'N/A'}\n\n**Proposed Remediation:**\n\n\`\`\`bash\n${analysisData.remediation?.command || 'No command generated'}\n\`\`\`\n`,
       }),
     });
 
