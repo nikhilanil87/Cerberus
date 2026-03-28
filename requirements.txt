@@ -51,9 +51,9 @@ starlette==0.52.1
 tenacity==9.1.4
 typing-inspection==0.4.2
 typing_extensions==4.15.0
+upstash-redis==1.7.0
 urllib3==2.6.3
 uvicorn==0.42.0
 uvloop==0.22.1
 watchfiles==1.1.1
 websockets==16.0
-upstash-redis
