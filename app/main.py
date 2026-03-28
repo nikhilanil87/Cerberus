@@ -140,7 +140,7 @@ async def login_mfa():
         "redirect_uri":  AUTH0_CALLBACK,
         "audience":      AUTH0_AUDIENCE,
         "scope":         "openid profile email",
-        "connection":    "github",
+        #"connection":    "github",
         "prompt":        "login",   # force re-auth even if session exists
         "state":         "mfa_stepup",  # callback uses this to set mfa_verified=True in session
     })
