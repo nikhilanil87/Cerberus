@@ -138,7 +138,9 @@ permission_level = "admin" (Senior Dev):
 - Never suggest commands that affect /etc, /boot, /sys, /proc
 
 ═══ MANDATORY OUTPUT SCHEMA ═══
-Return ONLY valid JSON. No markdown. No extra text.
+Return ONLY a raw, perfectly formatted JSON object. 
+DO NOT wrap it in ```json blocks. DO NOT use trailing commas. 
+Ensure all strings are properly escaped.
 
 {
   "issue": "<concise title — what broke>",
