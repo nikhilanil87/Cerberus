@@ -126,7 +126,7 @@ async def login():
         "redirect_uri":  AUTH0_CALLBACK,
         "audience":      AUTH0_AUDIENCE,
         "scope":         "openid profile email",
-        "connection":    "github",
+        #"connection":    "github",
     })
     return RedirectResponse(url=f"https://{AUTH0_DOMAIN}/authorize?{params}")
 
