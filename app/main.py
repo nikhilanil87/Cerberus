@@ -372,77 +372,93 @@ async def analyze_logs(request_body: LogAnalysisRequest, request: Request):
     print(f"SECURITY AUDIT: AI diagnosis complete | req={request_id} | "
           f"severity={severity} | confidence={remediation.get('confidence')}%")
 
-    # ── Step 5: Step-up MFA check (critical severity, admin only) ─────────────
+    # ── Step 5: Permission-based command execution logic ──────────────────────
     signed_payload_dict = None
     security_audit      = {}
 
-    if permission_level == "admin" and remediation.get("command"):
+    # Determine if command should be executed based on role and severity
+    can_execute_command = False
+    
+    if permission_level == "admin":
+        # Admins can execute high-risk and high severity
+        # Critical severity requires MFA
+        can_execute_command = remediation.get("command") and severity in ["high", "medium", "low"]
+        
+        if remediation.get("command") and severity == "critical":
+            # Critical requires MFA for admins
+            stepup_ctx = StepUpContext(
+                severity=severity,
+                failure_category=failure["category"],
+                permission_level=permission_level,
+                request_id=request_id,
+            )
+            stepup = check_required(stepup_ctx)
 
-        stepup_ctx = StepUpContext(
-            severity=severity,
-            failure_category=failure["category"],
-            permission_level=permission_level,
-            request_id=request_id,
-        )
-        stepup = check_required(stepup_ctx)
+            if stepup.required:
+                session_mfa = get_session_user(request) and request.session.get("user", {}).get("mfa_verified", False)
+                has_mfa = request_body.mfa_verified or session_mfa
 
-        if stepup.required:
-            # Check MFA via two sources:
-            # 1. Session flag (set by /callback after /login/mfa redirect)
-            # 2. Frontend flag (set after MFA redirect completes)
-            session_mfa = get_session_user(request) and request.session.get("user", {}).get("mfa_verified", False)
-            has_mfa = request_body.mfa_verified or session_mfa
+                if not has_mfa:
+                    print(f"SECURITY AUDIT: 🚨 Step-up MFA required | req={request_id} → returning 403")
+                    raise HTTPException(
+                        status_code=403,
+                        detail={"error": "mfa_required", "message": "Step-up authentication required for critical severity.", "stepup_required": True}
+                    )
+                else:
+                    print(f"SECURITY AUDIT: ✅ MFA step-up verified | req={request_id} → admin can execute critical command")
+                    can_execute_command = True
+    
+    elif permission_level == "user":
+        # Users can execute only high-risk/high severity commands (not critical)
+        can_execute_command = remediation.get("command") and severity != "critical"
 
-            if not has_mfa:
-                print(f"SECURITY AUDIT: 🚨 Step-up MFA required | req={request_id} → returning 403")
-                raise HTTPException(
-                    status_code=403,
-                    detail={"error": "mfa_required", "message": "Step-up authentication required for critical severity.", "stepup_required": True}
-                )
-            else:
-                print(f"SECURITY AUDIT: ✅ MFA step-up verified | req={request_id} → proceeding")
-
-        # ── Step 6: AntiHallucinationFilter ──────────────────────────────────
+    # ── Step 6: AntiHallucinationFilter & RSA-PSS Signing ──────────────────
+    if can_execute_command:
         raw_command = remediation.get("command")
         safe_command, filter_audit = filter_instance.validate_or_null(raw_command)
 
         if not filter_audit.get("passed") and filter_audit.get("original_command_blocked"):
             remediation["command"] = None
             remediation["command_blocked"] = True
-            remediation["block_reason"]    = filter_audit.get("reason", "failed_security_filter")
+            remediation["block_reason"] = filter_audit.get("reason", "failed_security_filter")
             print(f"SECURITY AUDIT: 🚨 Command BLOCKED by AntiHallucinationFilter | "
                   f"req={request_id} | reason={filter_audit.get('reason')}")
+            security_audit["filter"] = filter_audit
         else:
             remediation["command"] = safe_command
+            security_audit["filter"] = filter_audit
 
-        security_audit["filter"] = filter_audit
-
-        # ── Step 7: RSA-PSS Signing ───────────────────────────────────────────
-        if safe_command:
-            try:
-                signed = sign_remediation_payload(
-                    bash_command=safe_command,
-                    request_id=request_id,
-                    actor_sub=actor["sub"],
-                    failure_category=failure["category"],
-                )
-                signed_payload_dict = signed.model_dump()
-                security_audit["signing"] = {
-                    "signed":    True,
-                    "algorithm": "RSA-PSS-SHA256",
-                    "key_source": signed.metadata.get("key_source"),
-                }
-                print(f"SECURITY AUDIT: ✅ Command signed | req={request_id} | "
-                      f"algorithm=RSA-PSS-SHA256")
-            except Exception as e:
-                print(f"SECURITY AUDIT: ⚠ Signing failed | req={request_id} | error={e}")
-                security_audit["signing"] = {"signed": False, "error": str(e)}
-
-    elif permission_level == "user":
-        # Users never get commands — no filter needed
+            # ── Step 7: RSA-PSS Signing ───────────────────────────────────────────
+            if safe_command:
+                try:
+                    signed = sign_remediation_payload(
+                        bash_command=safe_command,
+                        request_id=request_id,
+                        actor_sub=actor["sub"],
+                        failure_category=failure["category"],
+                    )
+                    signed_payload_dict = signed.model_dump()
+                    security_audit["signing"] = {
+                        "signed": True,
+                        "algorithm": "RSA-PSS-SHA256",
+                        "key_source": signed.metadata.get("key_source"),
+                    }
+                    print(f"SECURITY AUDIT: ✅ Command signed | req={request_id} | "
+                          f"algorithm=RSA-PSS-SHA256 | role={permission_level}")
+                except Exception as e:
+                    print(f"SECURITY AUDIT: ⚠ Signing failed | req={request_id} | error={e}")
+                    security_audit["signing"] = {"signed": False, "error": str(e)}
+    else:
+        # Command not allowed - nullify it
         remediation["command"] = None
-        security_audit["filter"] = {"skipped": True, "reason": "user_role_no_commands"}
-        print(f"SECURITY AUDIT: User role → command nullified | req={request_id}")
+        reason = (
+            "critical_severity_requires_mfa" if severity == "critical" and permission_level == "admin"
+            else "critical_severity_user_role" if severity == "critical" and permission_level == "user"
+            else f"{permission_level}_role_restrictions"
+        )
+        security_audit["filter"] = {"skipped": True, "reason": reason}
+        print(f"SECURITY AUDIT: Command execution denied | req={request_id} | "
+              f"role={permission_level} | severity={severity} | reason={reason}")
 
     # ── Step 8: GitHub issue via Token Vault ──────────────────────────────────
     github_issue = None

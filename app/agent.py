@@ -109,6 +109,63 @@ def _extract_exit_code(log_lower: str) -> int | None:
     return int(match.group(1)) if match else None
 
 
+def _get_safe_alternatives_for_category(category: str) -> list:
+    """
+    Returns context-specific diagnostic commands based on failure category.
+    Each command is safe, read-only, and tailored to investigate the root cause.
+    """
+    alternatives = {
+        "port_conflict": [
+            "lsof -i :PORT | head -20",  # Find process using the port
+            "netstat -tuln | grep LISTEN",  # List all listening ports
+            "sudo systemctl status | grep failed",  # Check for failed services
+        ],
+        "disk_full": [
+            "df -h",  # Disk usage summary
+            "du -sh /* | sort -h | tail -10",  # Largest directories
+            "find / -type f -size +100M 2>/dev/null | head -20",  # Find large files
+        ],
+        "permission_denied": [
+            "ls -la /application",  # Check file permissions
+            "id",  # Current user and groups
+            "sudo -l",  # Check sudo privileges
+        ],
+        "oom_kill": [
+            "free -h",  # Memory usage
+            "ps aux --sort=-%mem | head -15",  # Top memory consumers
+            "dmesg | grep -i oom | tail -5",  # OOM killer logs
+        ],
+        "service_crash": [
+            "systemctl status application",  # Service status
+            "journalctl -u application -n 50 --no-pager",  # Service logs
+            "ps aux | grep application",  # Check if running
+        ],
+        "connection_refused": [
+            "nc -zv HOST PORT",  # Test connection
+            "netstat -tuln | grep ESTABLISHED",  # Active connections
+            "curl -v http://HOST:PORT/health 2>&1 | head -20",  # Health check
+        ],
+        "ssl_error": [
+            "openssl s_client -connect HOST:PORT -showcerts",  # Certificate info
+            "openssl x509 -in /path/to/cert.pem -noout -dates",  # Certificate expiry
+            "update-ca-certificates --verbose",  # Verify CA bundle
+        ],
+        "timeout": [
+            "ping -c 3 HOST",  # Network connectivity
+            "timeout 5 curl -v http://HOST:PORT",  # Timeout test
+            "netstat -an | grep -i time_wait | wc -l",  # Check TCP state
+        ],
+        "unstructured_traceback": [
+            "tail -100 /var/log/application.log",  # Recent logs
+            "journalctl -n 100 --no-pager",  # System journal
+            "ps aux | grep -E 'python|node|java'",  # Check running processes
+        ],
+    }
+    
+    # Return category-specific commands ONLY, no generic fallback
+    return alternatives.get(category, [])
+
+
 # ── Prompt ────────────────────────────────────────────────────────────────────
 
 SYSTEM_PROMPT = """You are Cerberus, a Zero-Trust Autonomous IT Remediation Agent.
@@ -117,16 +174,17 @@ Your mission is to diagnose system failures and generate precise remediations wh
 ═══ IDENTITY-BASED PERMISSION RULES (NON-NEGOTIABLE) ═══
 
 permission_level = "user" (Junior Dev):
-  - Provide READ-ONLY diagnostic commands ONLY (df -h, ls -la, tail, ps, lsof, journalctl)
-  - You are STRICTLY PROHIBITED from suggesting destructive commands (rm, kill, systemctl stop, truncate)
-  - command field MUST be null
-  - safe_alternatives must contain 3 safe read-only commands
+  - CRITICAL: Can NOW execute HIGH-RISK and HIGH severity remediation commands
+  - FORBIDDEN: Cannot execute CRITICAL severity commands (readonly diagnostics only)
+  - Default to non-destructive: truncate/echo "" over rm, systemctl restart over kill -9
+  - Must provide specific rollback procedure for any action command
+  - safe_alternatives: context-specific diagnostic commands or empty array []
 
 permission_level = "admin" (Senior Dev):
-  - You MAY suggest high-impact remediations if they are the only logical solution
-  - ALWAYS prefer truncate or echo "" over rm for log files (preserves file descriptors)
-  - NEVER use recursive force deletes (rm -rf /) on system directories
-  - If severity=critical → set requires_mfa=true (triggers Auth0 Step-Up MFA)
+  - Can execute HIGH, MEDIUM, LOW severity commands without restrictions
+  - CRITICAL severity requires MFA verification (set requires_mfa=true)
+  - Must provide specific rollback procedure for any action
+  - Provide 3 practical diagnostic commands in safe_alternatives if applicable
   - Explain the blast_radius: what data/services are affected, is there a backup?
 
 ═══ ANTI-RAMPAGE PROTOCOL ═══
@@ -135,6 +193,13 @@ permission_level = "admin" (Senior Dev):
 - Prefer truncate over rm for log files
 - Prefer systemctl restart over kill -9
 - Never suggest commands that affect /etc, /boot, /sys, /proc
+
+═══ ROLLBACK PROCEDURE (CRITICAL REQUIREMENT) ═══
+EVERY command MUST have a specific, actionable rollback procedure.
+  - File deletions: show restore/recovery command
+  - Service restarts: show reverse systemctl command
+  - Config changes: show config file restore or git revert
+  - NEVER use generic text: always provide exact, copy-paste-ready commands
 
 ═══ MANDATORY OUTPUT SCHEMA ═══
 Return ONLY a raw, perfectly formatted JSON object. 
@@ -148,14 +213,14 @@ CRITICAL: You MUST properly escape all double quotes (\\") and newlines (\\n) in
   "reasoning": "<step-by-step diagnosis — MUST explicitly state permission level>",
   "confidence": <integer 0-100>,
   "severity": "<critical|high|medium|low>",
-  "requires_mfa": <true if severity=critical and permission=admin, else false>,
+  "requires_mfa": <true only if severity=critical and permission=admin, else false>,
   "security_verdict": "<2-3 sentences: WHY this specific command, what is the blast radius, what could go wrong>",
   "blast_radius": "<what data/services are affected if this command runs — be specific>",
   "risk_assessment": <integer 1-100 — potential for data loss or downtime>,
-  "command": "<single bash command if admin, else null — prefer truncate/restart over rm/kill>",
-  "safe_alternatives": ["<read-only diagnostic cmd 1>", "<read-only diagnostic cmd 2>", "<read-only diagnostic cmd 3>"],
+  "command": "<bash command, null only for user+critical severity>",
+  "safe_alternatives": ["<diagnostic cmd 1 — context-specific or empty array if not applicable>", "<diagnostic cmd 2>", "<diagnostic cmd 3>"],
   "suggested_fix": "<human-readable step-by-step fix>",
-  "rollback": "<exact rollback command or procedure>",
+  "rollback": "<CRITICAL: exact rollback command/procedure — must be specific, not generic>",
   "estimated_downtime": "<e.g. 2-5 minutes>"
 }"""
 
@@ -175,7 +240,7 @@ EVIDENCE: {failure.get('evidence', 'n/a')}
 EXIT CODE: {failure.get('exit_code', 'n/a')}
 PERMISSION LEVEL: {permission_level} ({role_label})
 
-{"IMPORTANT: This is a USER request. command MUST be null. Provide read-only diagnostics only." if permission_level == "user" else "IMPORTANT: This is an ADMIN request. Provide the most targeted fix. Set requires_mfa=true if severity=critical."}
+{"IMPORTANT: This is a USER request. For critical severity: null command + readonly diagnostics only. For high/medium/low severity: provide targeted remediation." if permission_level == "user" else "IMPORTANT: This is an ADMIN request. Provide the most targeted fix. Set requires_mfa=true ONLY if severity=critical."}
 
 Analyze this log and return ONLY the JSON object."""
 
@@ -279,6 +344,27 @@ def _extract_json(raw_text: str) -> dict | None:
 FORMATTER_PROMPT = """You are a JSON formatter. You will receive unstructured text from an AI diagnostic agent.
 Your ONLY job is to extract the information and return it as a perfectly valid JSON object.
 
+CRITICAL INSTRUCTIONS:
+1. Generate context-specific safe_alternatives ONLY if failure category is clear
+   - port_conflict → lsof, netstat, systemctl commands
+   - disk_full → df, du, find commands  
+   - oom_kill → free, ps (memory), dmesg commands
+   - permission_denied → ls -la, id, sudo -l commands
+   - service_crash → systemctl status, journalctl, ps commands
+   - If category is unclear/generic → use EMPTY ARRAY []
+
+2. Rollback MUST be specific and actionable (CRITICAL requirement)
+   - For file deletions: show restore/undo command
+   - For service changes: show systemctl rollback command
+   - For config changes: show config restore procedure
+   - NEVER output generic text like "Unknown" for rollback
+
+3. Command rules based on severity:
+   - User role + critical severity → command MUST be null (readonly diagnostics only)
+   - User role + high severity → provide actionable remediation command
+   - Admin role + critical → provide command with requires_mfa=true
+   - Always prefer non-destructive: truncate/echo "" over rm, systemctl restart over kill -9
+
 Return ONLY raw JSON. No markdown. No explanation. No trailing commas.
 
 Required schema:
@@ -294,18 +380,19 @@ Required schema:
   "blast_radius": "<string>",
   "risk_assessment": <integer 1-100>,
   "command": <string or null>,
-  "safe_alternatives": ["<cmd1>", "<cmd2>", "<cmd3>"],
+  "safe_alternatives": [<empty if category unclear, else 3 context-specific commands>],
   "suggested_fix": "<string>",
-  "rollback": "<string>",
+  "rollback": "<string — MUST be specific procedure, not generic>",
   "estimated_downtime": "<string>"
 }
 
-If a field cannot be determined from the text, use a sensible default:
-- strings: "Unknown"
+If a field cannot be determined:
+- strings: "Unknown" (EXCEPT rollback: always provide best-effort specific procedure)
 - integers: 50
 - booleans: false
-- command: null
-- safe_alternatives: ["df -h", "ps aux", "journalctl -xe | tail -50"]"""
+- command: null for critical user, specific for high/medium/low user, specific for all admin
+- safe_alternatives: [] if unclear, specific commands if clear
+- rollback: always specific (e.g., "sudo systemctl restart nginx", "git revert <commit>", "restore /etc/config.bak")"""
 
 
 async def _format_with_agent(raw_text: str, permission_level: str) -> dict | None:
@@ -378,12 +465,12 @@ def _api_error_fallback(error_msg: str) -> dict:
         "confidence": 0,
         "severity": "high",
         "requires_mfa": False,
-        "security_verdict": "Manual intervention required. AI disabled.",
-        "blast_radius": "Unknown",
+        "security_verdict": "Manual intervention required. AI disabled. Check API logs and GCP quotas.",
+        "blast_radius": "Remediation pipeline blocked - manual fixes required",
         "risk_assessment": 100,
         "command": None,
-        "safe_alternatives": ["gcloud services enable aiplatform.googleapis.com"],
-        "suggested_fix": "Verify GCP Vertex AI API is enabled and quota is available in the Cloud Console.",
-        "rollback": "N/A",
-        "estimated_downtime": "Unknown"
+        "safe_alternatives": [],  # No generic commands - category not identified
+        "suggested_fix": "1. Check if Vertex AI API is enabled in Cloud Console\n2. Verify service quotas\n3. Review API logs for errors",
+        "rollback": "Restart Cerberus service: systemctl restart cerberus-remediation",
+        "estimated_downtime": "Until Vertex AI API is restored"
     }

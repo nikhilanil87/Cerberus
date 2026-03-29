@@ -36,13 +36,6 @@ AUTH0_CALLBACK  = os.getenv("AUTH0_CALLBACK_URL", "http://localhost:8000/callbac
 # Severity levels that trigger step-up MFA
 CRITICAL_SEVERITIES = {"critical"}
 
-# Failure categories that ALWAYS require MFA (even if severity is high)
-HIGH_RISK_CATEGORIES = {
-    "oom_kill",      # kernel OOM killer — could mask deeper issue
-    "service_crash", # service crash may require root-level intervention
-    "disk_full",     # full disk on prod requires careful cleanup
-}
-
 
 # ── Models ────────────────────────────────────────────────────────────────────
 
@@ -69,7 +62,6 @@ def check_required(context: StepUpContext) -> StepUpRequirement:
 
     Rules:
     - Admin + critical severity → always requires MFA
-    - Admin + high-risk category → requires MFA
     - User role → never requires MFA (they don't get commands anyway)
     """
     if context.permission_level != "admin":
@@ -77,10 +69,7 @@ def check_required(context: StepUpContext) -> StepUpRequirement:
               f"role=user → no step-up required (non-admin)")
         return StepUpRequirement(required=False, reason="non_admin_role")
 
-    needs_stepup = (
-        context.severity in CRITICAL_SEVERITIES
-        or context.failure_category in HIGH_RISK_CATEGORIES
-    )
+    needs_stepup = context.severity in CRITICAL_SEVERITIES
 
     if not needs_stepup:
         print(f"SECURITY AUDIT: Step-up check | req={context.request_id} | "
