@@ -368,9 +368,32 @@ async def analyze_logs(request_body: LogAnalysisRequest, request: Request):
         failure=failure,
     )
 
-    severity = remediation.get("severity", "medium")
+    # Normalize and derive severity from risk_assessment to avoid false-critical labeling
+    risk_score = remediation.get("risk_assessment")
+    if isinstance(risk_score, (int, float)):
+        risk_score = int(risk_score)
+        remediation["risk_assessment"] = max(0, min(100, risk_score))
+        if risk_score < 30:
+            remediation["severity"] = "low"
+        elif risk_score < 60:
+            remediation["severity"] = "medium"
+        elif risk_score < 80:
+            remediation["severity"] = "high"
+        else:
+            remediation["severity"] = "critical"
+
+    # Ensure severity is canonical
+    severity = str(remediation.get("severity", "medium")).lower()
+    if severity not in ["low", "medium", "high", "critical"]:
+        severity = "medium"
+    remediation["severity"] = severity
+
+    # Track MFA requirement deterministically; do not rely solely on AI output
+    remediation["requires_mfa"] = (severity == "critical")
+
     print(f"SECURITY AUDIT: AI diagnosis complete | req={request_id} | "
-          f"severity={severity} | confidence={remediation.get('confidence')}%")
+          f"severity={severity} | confidence={remediation.get('confidence')}% | "
+          f"risk_assessment={remediation.get('risk_assessment')}")
 
     # ── Step 5: Permission-based command execution logic ──────────────────────
     signed_payload_dict = None
