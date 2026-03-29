@@ -206,38 +206,166 @@ async def generate_remediation_script(
         )
 
         raw_text = response.text.strip()
-        result = None
-        
-        # ── ROBUST JSON EXTRACTION ──
-        try:
-            # First attempt: Clean off markdown if it exists
-            clean_text = raw_text
-            if clean_text.startswith("```"):
-                clean_text = re.sub(r"\s*```$", "", clean_text)
-            result = json.loads(clean_text)
-        except json.JSONDecodeError:
-            # Second attempt: Extract exactly from the first { to the last }
-            start_idx = raw_text.find('{')
-            end_idx = raw_text.rfind('}')
-            if start_idx != -1 and end_idx != -1:
-                extracted = raw_text[start_idx:end_idx+1]
-                result = json.loads(extracted)
-            else:
-                raise ValueError("Could not locate JSON object in AI response.")
 
-        # ── SECURITY ENFORCEMENT ──
+        # ── ROBUST JSON EXTRACTION ──────────────────────────────────────────
+        result = _extract_json(raw_text)
+
+        if result is None:
+            # Primary extraction failed — run the formatter agent
+            log.warning(f"Primary JSON extraction failed — running formatter agent")
+            result = await _format_with_agent(raw_text, permission_level)
+
+        if result is None:
+            return _api_error_fallback(f"Both extraction and formatter failed. Raw: {raw_text[:200]}")
+
+        # ── SECURITY ENFORCEMENT (always, regardless of path taken) ─────────
         if permission_level != "admin":
             result["command"] = None
 
         log.info(f"Vertex AI success | model={GEMINI_MODEL} | confidence={result.get('confidence')}%")
         return result
 
-    except json.JSONDecodeError as e:
-        log.error(f"Error parsing JSON: {e} | Raw output: {raw_text[:200]}...")
-        return _api_error_fallback(f"AI returned malformed JSON data: {e}")
     except Exception as e:
         log.error(f"Vertex AI call failed: {e}")
         return _api_error_fallback(f"LLM Generation Failed: {str(e)}")
+
+
+def _extract_json(raw_text: str) -> dict | None:
+    """
+    Attempts to extract a JSON object from raw LLM output.
+    Handles three common Gemini output formats:
+      1. Clean JSON (ideal)
+      2. ```json ... ``` fenced block
+      3. JSON embedded somewhere in a prose response
+    Returns parsed dict or None if all attempts fail.
+    """
+    if not raw_text:
+        return None
+
+    # Strategy 1: Direct parse — Gemini returned clean JSON
+    try:
+        return json.loads(raw_text)
+    except json.JSONDecodeError:
+        pass
+
+    # Strategy 2: Strip markdown fences (```json ... ``` or ``` ... ```)
+    # Find the outermost { } pair regardless of surrounding text
+    start = raw_text.find('{')
+    end   = raw_text.rfind('}')
+    if start != -1 and end != -1 and end > start:
+        candidate = raw_text[start:end + 1]
+        try:
+            return json.loads(candidate)
+        except json.JSONDecodeError:
+            pass
+
+    # Strategy 3: Fix common Gemini quirks before giving up
+    # - Trailing commas before } or ]
+    # - Unescaped newlines inside strings (replace literal newlines in values with \n)
+    if start != -1 and end != -1:
+        candidate = raw_text[start:end + 1]
+        # Remove trailing commas
+        import re as _re
+        candidate = _re.sub(r',\s*([}\]])', r'', candidate)
+        try:
+            return json.loads(candidate)
+        except json.JSONDecodeError:
+            pass
+
+    log.warning(f"_extract_json: all strategies failed | raw_start={raw_text[:80]}")
+    return None
+
+
+FORMATTER_PROMPT = """You are a JSON formatter. You will receive unstructured text from an AI diagnostic agent.
+Your ONLY job is to extract the information and return it as a perfectly valid JSON object.
+
+Return ONLY raw JSON. No markdown. No explanation. No trailing commas.
+
+Required schema:
+{
+  "issue": "<string>",
+  "service": "<string>",
+  "root_cause": "<string>",
+  "reasoning": "<string>",
+  "confidence": <integer 0-100>,
+  "severity": "<critical|high|medium|low>",
+  "requires_mfa": <boolean>,
+  "security_verdict": "<string>",
+  "blast_radius": "<string>",
+  "risk_assessment": <integer 1-100>,
+  "command": <string or null>,
+  "safe_alternatives": ["<cmd1>", "<cmd2>", "<cmd3>"],
+  "suggested_fix": "<string>",
+  "rollback": "<string>",
+  "estimated_downtime": "<string>"
+}
+
+If a field cannot be determined from the text, use a sensible default:
+- strings: "Unknown"
+- integers: 50
+- booleans: false
+- command: null
+- safe_alternatives: ["df -h", "ps aux", "journalctl -xe | tail -50"]"""
+
+
+async def _format_with_agent(raw_text: str, permission_level: str) -> dict | None:
+    """
+    Two-agent pattern: when the primary Gemini call returns malformed output,
+    this function calls Gemini again with a minimal formatter prompt.
+
+    The formatter model has one job: take the raw text and return valid JSON.
+    It uses a lower temperature (0.0) to be deterministic.
+
+    This is cheaper than a full retry because the formatter prompt is tiny
+    and the output is short structured JSON only.
+    """
+    if not GCP_PROJECT_ID:
+        return None
+
+    try:
+        import vertexai
+        from vertexai.generative_models import GenerativeModel, GenerationConfig
+
+        vertexai.init(project=GCP_PROJECT_ID, location=GCP_LOCATION)
+
+        formatter = GenerativeModel(
+            GEMINI_MODEL,
+            generation_config=GenerationConfig(
+                temperature=0.0,          # deterministic — just format, don't invent
+                max_output_tokens=1024,
+                response_mime_type="application/json",
+            ),
+        )
+
+        formatter_input = f"""{FORMATTER_PROMPT}
+
+UNSTRUCTURED DIAGNOSTIC TEXT TO FORMAT:
+---
+{raw_text[:3000]}
+---
+
+Return ONLY the JSON object."""
+
+        log.info("Formatter agent running — attempting to rescue malformed output")
+        print(f"AGENT: 🔧 Formatter agent invoked | input_length={len(raw_text)} chars")
+
+        loop   = asyncio.get_event_loop()
+        resp   = await loop.run_in_executor(None, lambda: formatter.generate_content(formatter_input))
+        result = _extract_json(resp.text.strip())
+
+        if result:
+            print(f"AGENT: ✅ Formatter agent succeeded | fields={list(result.keys())}")
+            # Always enforce permission — formatter may have hallucinated a command
+            if permission_level != "admin":
+                result["command"] = None
+            return result
+
+        print(f"AGENT: ❌ Formatter agent also failed | raw={resp.text[:100]}")
+        return None
+
+    except Exception as e:
+        log.error(f"Formatter agent failed: {e}")
+        return None
 
 
 def _api_error_fallback(error_msg: str) -> dict:
