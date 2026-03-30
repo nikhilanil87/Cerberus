@@ -22,6 +22,7 @@ from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, HTMLResponse, RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
+from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel, json
 from dotenv import load_dotenv
 import httpx
@@ -544,8 +545,9 @@ async def analyze_logs(request_body: LogAnalysisRequest, request: Request):
     
     if redis:
         history_key = f"history:{actor['sub']}"
-        # Store last 10 incidents for this specific account
-        redis.lpush(history_key, json.dumps(audit)) 
+        # This converts datetimes to strings automatically
+        safe_audit = jsonable_encoder(audit) 
+        redis.lpush(history_key, json.dumps(safe_audit)) 
         redis.ltrim(history_key, 0, 9)
 
     return RemediationResponse(
