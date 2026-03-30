@@ -172,8 +172,11 @@ async def login_mfa():
         "audience":      AUTH0_AUDIENCE,
         "scope":         "openid profile email",
         #"connection":    "github",
-        "prompt":        "login",   # force re-auth even if session exists
+        "prompt":        "login",       # force re-auth even if session exists
         "state":         "mfa_stepup",  # callback uses this to set mfa_verified=True in session
+        
+        # 👇 This is the magic flag that tells Auth0 to prompt for a second factor 👇
+        "acr_values":    "http://schemas.openid.net/pape/policies/2007/06/multi-factor" 
     })
     print("SECURITY AUDIT: 🔐 Redirecting to Auth0 step-up MFA")
     return RedirectResponse(url=f"https://{AUTH0_DOMAIN}/authorize?{params}")
