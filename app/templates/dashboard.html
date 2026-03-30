@@ -532,17 +532,31 @@ async function runAnalysis() {
     addAudit(json);
     renderResult(json);
     
-    // ── CLEAR PENDING STATE ON SUCCESS ──
-    localStorage.removeItem('pending_log');
-    localStorage.removeItem('pending_service');
-    localStorage.removeItem('pending_repo');
-    if (json.remediation?.requires_mfa && userInfo?.is_admin && !json.remediation?.command && !json.audit_trail?.mfa_verified) {
-      console.warn('SECURITY AUDIT: MFA-required response, forcing MFA modal.');
-      showMFAModal();
-    }
+    // 1. Check if the command was blocked by the Anti-Hallucination filter
+    const isBlocked = json.remediation?.command_blocked === true;
+    
+    // 2. Determine if we ACTUALLY need MFA
+    const needsMFA = json.remediation?.requires_mfa && 
+                     userInfo?.is_admin && 
+                     !json.remediation?.command && 
+                     !json.audit_trail?.mfa_verified && 
+                     !isBlocked;
 
-    if (githubRepo && json.failure_detected && !json.github_issue) {
-      setTimeout(() => showGHModal(), 1200);
+    if (needsMFA) {
+      console.warn('SECURITY AUDIT: MFA-required response, forcing MFA modal.');
+      // WE DO NOT CLEAR LOCAL STORAGE HERE! 
+      // This allows the log to survive the Auth0 redirect.
+      showMFAModal();
+    } else {
+      // SAFE TO CLEAR: If no MFA is needed, wipe the pending memory
+      localStorage.removeItem('pending_log');
+      localStorage.removeItem('pending_service');
+      localStorage.removeItem('pending_repo');
+      
+      // Show GitHub modal only if we are fully done
+      if (githubRepo && json.failure_detected && !json.github_issue) {
+        setTimeout(() => showGHModal(), 1200);
+      }
     }
 
   } catch(e) {
@@ -846,7 +860,10 @@ function renderResult(json) {
       <div class="rollback">${d.rollback}</div>
     </div>`;
 
-  if (isAdmin && d.requires_mfa && !d.command && !json.audit_trail?.mfa_verified) {
+  // Add !isBlocked to prevent the modal from popping on filtered commands
+  const isBlocked = d.command_blocked === true;
+  
+  if (isAdmin && d.requires_mfa && !d.command && !json.audit_trail?.mfa_verified && !isBlocked) {
     console.warn('SECURITY AUDIT: MFA-required state with hidden command; showing MFA modal.');
     showMFAModal();
   }
