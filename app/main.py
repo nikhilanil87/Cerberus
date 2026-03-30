@@ -10,7 +10,7 @@ Security layers (in order):
 5. signing.py       → RSA-PSS payload signing before command delivery
 6. vault.py         → Token Vault GitHub issue creation
 """
-
+import json
 import os
 import logging
 import uuid
@@ -23,7 +23,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, HTMLResponse, RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.encoders import jsonable_encoder
-from pydantic import BaseModel, json
+from pydantic import BaseModel
 from dotenv import load_dotenv
 import httpx
 
@@ -543,12 +543,26 @@ async def analyze_logs(request_body: LogAnalysisRequest, request: Request):
           f"signed={audit['command_signed']} | "
           f"github_issue={audit['github_issue_created']}\n")
     
+    # ── Step 10: Persistent History (Safe Block) ──
     if redis:
-        history_key = f"history:{actor['sub']}"
-        # This converts datetimes to strings automatically
-        safe_audit = jsonable_encoder(audit) 
-        redis.lpush(history_key, json.dumps(safe_audit)) 
-        redis.ltrim(history_key, 0, 9)
+        try:
+            # Use the standard json library and jsonable_encoder
+            import json 
+            from fastapi.encoders import jsonable_encoder
+            
+            history_key = f"history:{actor['sub']}"
+            
+            # Ensure the audit dictionary is fully JSON-serializable
+            safe_audit = jsonable_encoder(audit) 
+            
+            # Push to Redis with a check for connectivity
+            redis.lpush(history_key, json.dumps(safe_audit)) 
+            redis.ltrim(history_key, 0, 9)
+            
+            print(f"SECURITY AUDIT: History synced to Redis for {actor['sub']}")
+        except Exception as re:
+            # This catch-all prevents a 500 error if Redis is slow or fails
+            print(f"SECURITY AUDIT: ⚠ Redis History Sync Failed: {re}")
 
     return RemediationResponse(
         timestamp=datetime.now(timezone.utc).isoformat(),
