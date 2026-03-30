@@ -18,7 +18,7 @@ log = logging.getLogger("remediation-agent")
 
 GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID")
 GCP_LOCATION   = os.getenv("GCP_LOCATION", "us-central1")
-GEMINI_MODEL   = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+GEMINI_MODEL   = os.getenv("GEMINI_MODEL", "gemini-2.5-pro")
 
 _vertex_model = None
 
