@@ -18,7 +18,7 @@ from datetime import datetime, timezone
 from typing import Optional
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Request, Depends
+from fastapi import FastAPI, HTTPException, Request, Depends, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, HTMLResponse, RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
@@ -305,11 +305,23 @@ class RemediationResponse(BaseModel):
     github_issue:      Optional[dict]
     audit_trail:       dict
 
+def save_to_history_background(history_key: str, audit_data: dict):
+    """Saves audit trail to Redis without blocking the main request."""
+    if redis:
+        try:
+            import json
+            from fastapi.encoders import jsonable_encoder
+            safe_audit = jsonable_encoder(audit_data)
+            redis.lpush(history_key, json.dumps(safe_audit))
+            redis.ltrim(history_key, 0, 9)
+            print(f"SECURITY AUDIT: Background history sync complete for {history_key}")
+        except Exception as e:
+            print(f"SECURITY AUDIT: ⚠ Background Redis Sync Failed: {e}")
 
 # ── Core Agent Endpoint ───────────────────────────────────────────────────────
 
 @app.post("/logs/analyze", response_model=RemediationResponse, tags=["Agent"], dependencies=[Depends(rate_limiter)])
-async def analyze_logs(request_body: LogAnalysisRequest, request: Request):
+async def analyze_logs(request_body: LogAnalysisRequest, request: Request, background_tasks: BackgroundTasks):
     """
     Zero-trust remediation pipeline:
 
@@ -543,26 +555,9 @@ async def analyze_logs(request_body: LogAnalysisRequest, request: Request):
           f"signed={audit['command_signed']} | "
           f"github_issue={audit['github_issue_created']}\n")
     
-    # ── Step 10: Persistent History (Safe Block) ──
-    if redis:
-        try:
-            # Use the standard json library and jsonable_encoder
-            import json 
-            from fastapi.encoders import jsonable_encoder
-            
-            history_key = f"history:{actor['sub']}"
-            
-            # Ensure the audit dictionary is fully JSON-serializable
-            safe_audit = jsonable_encoder(audit) 
-            
-            # Push to Redis with a check for connectivity
-            redis.lpush(history_key, json.dumps(safe_audit)) 
-            redis.ltrim(history_key, 0, 9)
-            
-            print(f"SECURITY AUDIT: History synced to Redis for {actor['sub']}")
-        except Exception as re:
-            # This catch-all prevents a 500 error if Redis is slow or fails
-            print(f"SECURITY AUDIT: ⚠ Redis History Sync Failed: {re}")
+    # ── Step 10: Trigger Background History Save ──
+    history_key = f"history:{actor['sub']}"
+    background_tasks.add_task(save_to_history_background, history_key, audit)
 
     return RemediationResponse(
         timestamp=datetime.now(timezone.utc).isoformat(),
