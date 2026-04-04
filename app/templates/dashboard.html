@@ -675,12 +675,22 @@ function updateMetrics(json) {
   if (json.failure_detected) S.fail++;
   if (json.remediation?.confidence) S.conf.push(json.remediation.confidence);
   if (json.security_audit?.filter?.original_command_blocked) S.blocked++;
-  document.getElementById('mReq').textContent   = S.req;
-  document.getElementById('mFail').textContent  = S.fail;
-  document.getElementById('mBlock').textContent = S.blocked;
+  
+  // Safe updates: Only set textContent if the HTML element actually exists
+  const elReq = document.getElementById('mReq');
+  if (elReq) elReq.textContent = S.req;
+  
+  const elFail = document.getElementById('mFail');
+  if (elFail) elFail.textContent = S.fail;
+  
+  const elBlock = document.getElementById('mBlock');
+  if (elBlock) elBlock.textContent = S.blocked;
+  
   const avg = S.conf.length
     ? Math.round(S.conf.reduce((a,b)=>a+b,0)/S.conf.length)+'%' : '—';
-  document.getElementById('mConf').textContent = avg;
+    
+  const elConf = document.getElementById('mConf');
+  if (elConf) elConf.textContent = avg;
 }
 
 // ── Audit Trail ────────────────────────────────────────────────────────────
