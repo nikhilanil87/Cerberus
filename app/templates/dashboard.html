@@ -4,129 +4,582 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cerberus Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400;500;600;700&family=VT323&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#050810;--surface:#0b1120;--border:#1a2540;--border2:#243050;--text:#c8d8f0;--muted:#4a6080;--accent:#00e5ff;--green:#00ff9d;--yellow:#ffcc00;--red:#ff3c5a;--orange:#ff7a30;--admin:#b06dff;--user:#00ccff;--mono:'JetBrains Mono',monospace;--sans:'Space Grotesk',sans-serif;}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;}
-body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
-@keyframes spin{to{transform:rotate(360deg);}}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
-@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
-@keyframes slideUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+:root {
+  --bg:        #0d0f1a;
+  --surface:   #131625;
+  --surface2:  #1a1e32;
+  --border:    #1e2540;
+  --border2:   #2a3460;
+  --text:      #d8e8ff;
+  --muted:     #7a9ab8;
+  --accent:    #f5c518;
+  --cyan:      #00e5ff;
+  --green:     #00ff88;
+  --red:       #ff3355;
+  --orange:    #ff7730;
+  --yellow:    #f5c518;
+  --admin:     #cc44ff;
+  --user:      #44bbff;
+  --mono:      'Press Start 2P', monospace;
+  --sans:      'Pixelify Sans', monospace;
+  --vt:        'VT323', monospace;
+}
 
-header{position:sticky;top:0;z-index:100;border-bottom:1px solid var(--border);background:rgba(5,8,16,0.95);backdrop-filter:blur(10px);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:64px;}
-.logo{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-weight:700;font-size:1rem;letter-spacing:0.08em;color:var(--accent);}
-.logo-icon{width:30px;height:30px;border:2px solid var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;}
-.logo-sub{color:var(--muted);font-size:0.65rem;font-weight:400;}
-.header-right{display:flex;align-items:center;gap:14px;}
-.user-badge{display:flex;align-items:center;gap:8px;padding:5px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:0.68rem;}
-.role-pill{padding:2px 8px;border-radius:4px;font-size:0.6rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;}
-.role-admin{background:rgba(176,109,255,0.2);color:var(--admin);border:1px solid rgba(176,109,255,0.3);}
-.role-user{background:rgba(0,204,255,0.15);color:var(--user);border:1px solid rgba(0,204,255,0.3);}
-.logout-btn{padding:5px 12px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-family:var(--mono);font-size:0.68rem;cursor:pointer;text-decoration:none;}
-.logout-btn:hover{border-color:var(--red);color:var(--red);}
-.status-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s ease-in-out infinite;}
-.app{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:2rem;display:grid;grid-template-columns:300px 1fr;gap:1.5rem;}
-.panel{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
-.ph{padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:0.65rem;font-weight:500;letter-spacing:0.1em;color:var(--muted);text-transform:uppercase;}
-.dot{width:7px;height:7px;border-radius:50%;}
-.sidebar{grid-column:1;display:flex;flex-direction:column;gap:1rem;}
-.log-form{padding:14px;}
-.fl{font-family:var(--mono);font-size:0.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px;margin-top:10px;display:block;}
-.fl:first-child{margin-top:0;}
-.sc-btn{width:100%;background:transparent;border:1px solid var(--border);border-radius:6px;padding:9px 11px;cursor:pointer;text-align:left;color:var(--text);font-family:var(--sans);margin-bottom:6px;transition:all 0.15s;}
-.sc-btn:hover,.sc-btn.active{border-color:var(--accent);background:rgba(0,229,255,0.05);}
-.sc-btn .sn{font-weight:600;font-size:0.8rem;color:var(--accent);margin-bottom:1px;}
-.sc-btn .ss{font-family:var(--mono);font-size:0.62rem;color:var(--muted);}
-.sb{display:inline-block;margin-top:3px;padding:1px 6px;border-radius:3px;font-size:0.58rem;font-family:var(--mono);font-weight:700;}
-.sb-c{background:rgba(255,60,90,0.15);color:var(--red);border:1px solid rgba(255,60,90,0.3);}
-.sb-h{background:rgba(255,122,48,0.15);color:var(--orange);border:1px solid rgba(255,122,48,0.3);}
-.log-ta{width:100%;background:#000812;border:1px solid var(--border2);border-radius:7px;padding:9px 11px;font-family:var(--mono);font-size:0.7rem;color:var(--accent);outline:none;resize:vertical;min-height:80px;line-height:1.6;}
-.log-ta:focus{border-color:var(--accent);}
-.inp{width:100%;background:#000812;border:1px solid var(--border2);border-radius:6px;padding:8px 11px;font-family:var(--mono);font-size:0.7rem;color:var(--text);outline:none;}
-.inp:focus{border-color:var(--accent);}
-.analyze-btn{width:100%;margin-top:12px;padding:11px;background:linear-gradient(135deg,rgba(0,229,255,0.2),rgba(0,229,255,0.08));border:1px solid var(--accent);border-radius:7px;color:var(--accent);font-family:var(--mono);font-size:0.75rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;transition:all 0.2s;}
-.analyze-btn:hover:not(:disabled){background:linear-gradient(135deg,rgba(0,229,255,0.3),rgba(0,229,255,0.15));}
-.analyze-btn:disabled{opacity:0.5;cursor:not-allowed;}
-.main-area{grid-column:2;display:flex;flex-direction:column;gap:1rem;}
-.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;}
-.mc{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem 1.1rem;}
-.ml{font-family:var(--mono);font-size:0.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px;}
-.mv{font-size:1.5rem;font-weight:700;font-family:var(--mono);color:var(--accent);}
-.ms{font-size:0.65rem;color:var(--muted);margin-top:1px;}
-.result-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
-.rh{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;}
-.rb{display:grid;grid-template-columns:1fr 1fr;gap:0;}
-.rl{border-right:1px solid var(--border);padding:16px;}
-.rr{padding:16px;}
-.it{font-size:0.95rem;font-weight:700;color:var(--text);margin-bottom:8px;line-height:1.4;}
-.mr2{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
-.chip{padding:3px 8px;border-radius:3px;font-family:var(--mono);font-size:0.6rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;}
-.chip-crit{background:rgba(255,60,90,0.15);color:var(--red);border:1px solid rgba(255,60,90,0.25);}
-.chip-high{background:rgba(255,122,48,0.15);color:var(--orange);border:1px solid rgba(255,122,48,0.25);}
-.chip-admin{background:rgba(176,109,255,0.15);color:var(--admin);border:1px solid rgba(176,109,255,0.25);}
-.chip-user{background:rgba(0,204,255,0.15);color:var(--user);border:1px solid rgba(0,204,255,0.25);}
-.chip-gray{background:rgba(0,229,255,0.08);color:var(--muted);border:1px solid var(--border);}
-.chip-green{background:rgba(0,255,157,0.1);color:var(--green);border:1px solid rgba(0,255,157,0.3);}
-.chip-red{background:rgba(255,60,90,0.15);color:var(--red);border:1px solid rgba(255,60,90,0.3);}
-.chip-yellow{background:rgba(255,204,0,0.1);color:var(--yellow);border:1px solid rgba(255,204,0,0.3);}
-.conf-label{font-family:var(--mono);font-size:0.62rem;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:4px;}
-.conf-bar{height:5px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden;margin-bottom:10px;}
-.conf-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--accent));border-radius:3px;transition:width 1s cubic-bezier(0.25,1,0.5,1);}
-.sl{font-family:var(--mono);font-size:0.6rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:5px;display:flex;align-items:center;gap:5px;}
-.sl::after{content:'';flex:1;height:1px;background:var(--border);}
-.root-cause{font-size:0.78rem;line-height:1.6;color:#c0d8f0;background:rgba(0,0,0,0.3);border-left:3px solid var(--accent);padding:8px 11px;margin-bottom:10px;}
-.reasoning{font-size:0.76rem;line-height:1.7;color:#8aaccc;margin-bottom:10px;}
-.cmd{background:#000812;border:1px solid var(--border2);border-radius:7px;overflow:hidden;margin-bottom:10px;}
-.cmd-hdr{display:flex;align-items:center;justify-content:space-between;padding:6px 11px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:0.6rem;color:var(--muted);}
-.cmd-body{padding:10px 13px;font-family:var(--mono);font-size:0.73rem;line-height:1.6;color:#b8f0d0;}
-.cmd-body.null-cmd{color:var(--muted);font-style:italic;display:flex;align-items:center;gap:6px;}
-.cmd-prompt{color:var(--green);}
-.fix-text{font-size:0.76rem;line-height:1.8;color:#8aaccc;white-space:pre-line;}
-.rollback{font-family:var(--mono);font-size:0.68rem;line-height:1.6;padding:8px 11px;background:rgba(255,122,48,0.05);border:1px solid rgba(255,122,48,0.15);border-radius:6px;color:#cc9060;}
-.sig-box{background:rgba(0,255,157,0.04);border:1px solid rgba(0,255,157,0.15);border-radius:6px;padding:8px 11px;margin-top:8px;font-family:var(--mono);font-size:0.62rem;color:var(--green);line-height:1.6;}
-.gh-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:6px;font-family:var(--mono);font-size:0.68rem;font-weight:700;background:rgba(0,255,157,0.1);border:1px solid rgba(0,255,157,0.3);color:var(--green);text-decoration:none;margin-top:8px;}
-.empty{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;min-height:180px;color:var(--muted);font-family:var(--mono);font-size:0.72rem;text-align:center;grid-column:1/-1;padding:20px;}
-.loading{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;min-height:180px;grid-column:1/-1;}
-.spinner{width:30px;height:30px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
-.err-box{padding:14px 16px;background:rgba(255,60,90,0.08);border:1px solid rgba(255,60,90,0.2);border-radius:7px;color:var(--red);font-family:var(--mono);font-size:0.72rem;line-height:1.7;grid-column:1/-1;margin:14px;}
-.ai{display:flex;align-items:flex-start;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:0.65rem;}
-.ai:last-child{border-bottom:none;}
-.ai-time{color:var(--muted);min-width:76px;}
-.ai-text{color:var(--text);flex:1;line-height:1.5;}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* Modals */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
-.overlay.hidden{display:none;}
-.modal{background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:2rem;max-width:480px;width:90%;animation:slideUp 0.3s ease;}
-.modal-icon{font-size:2.5rem;margin-bottom:1rem;}
-.modal-title{font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:0.5rem;}
-.modal-sub{font-size:0.8rem;color:var(--muted);line-height:1.7;margin-bottom:1.2rem;}
-.modal-sub strong{color:var(--yellow);}
-.modal-btn{width:100%;padding:11px;border-radius:8px;font-family:var(--mono);font-size:0.75rem;font-weight:700;letter-spacing:0.08em;cursor:pointer;margin-bottom:8px;}
-.btn-p{background:linear-gradient(135deg,rgba(176,109,255,0.3),rgba(176,109,255,0.15));border:1px solid var(--admin);color:var(--admin);}
-.btn-p:hover{background:linear-gradient(135deg,rgba(176,109,255,0.4),rgba(176,109,255,0.25));}
-.btn-s{background:transparent;border:1px solid var(--border);color:var(--muted);}
-.btn-s:hover{border-color:var(--border2);color:var(--text);}
-.mfa-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:4px;background:rgba(255,204,0,0.1);border:1px solid rgba(255,204,0,0.3);color:var(--yellow);font-family:var(--mono);font-size:0.65rem;font-weight:700;margin-bottom:1rem;}
-.consent-list{list-style:none;margin:0.8rem 0 1rem;}
-.consent-list li{font-size:0.78rem;color:var(--muted);line-height:1.7;padding:2px 0;display:flex;align-items:flex-start;gap:8px;}
-.consent-list li::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0;}
-.consent-list li.deny::before{content:'✗';color:var(--red);}
-.consent-list li.deny{color:rgba(255,60,90,0.7);}
-.consent-info{padding:10px 14px;background:rgba(0,229,255,0.06);border:1px solid rgba(0,229,255,0.2);border-radius:6px;font-size:0.73rem;color:var(--accent);line-height:1.6;margin-bottom:1rem;}
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  min-height: 100vh;
+  image-rendering: pixelated;
+}
 
-.verdict-box{background:rgba(0,229,255,0.04);border:1px solid rgba(0,229,255,0.15);border-left:3px solid var(--accent);border-radius:0 6px 6px 0;padding:10px 13px;margin-bottom:10px;font-size:0.76rem;color:var(--text);line-height:1.6;}
-.blast-box{background:rgba(255,122,48,0.06);border:1px solid rgba(255,122,48,0.2);border-left:3px solid var(--orange);border-radius:0 6px 6px 0;padding:10px 13px;margin-bottom:10px;font-size:0.76rem;color:#cc9060;line-height:1.6;}
-.risk-bar-wrap{margin-bottom:12px;}
-.risk-label{font-family:var(--mono);font-size:0.62rem;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:4px;}
-.risk-bar{height:5px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden;}
-.risk-fill{height:100%;border-radius:3px;transition:width 1s cubic-bezier(0.25,1,0.5,1);}
-.safe-alts{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;}
-.safe-alt-cmd{font-family:var(--mono);font-size:0.7rem;background:#000812;border:1px solid var(--border2);border-radius:5px;padding:6px 10px;color:var(--green);display:flex;align-items:center;gap:6px;}
-.safe-alt-cmd::before{content:'$';color:var(--muted);flex-shrink:0;}
-.mfa-required-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:5px;background:rgba(255,204,0,0.12);border:1px solid rgba(255,204,0,0.3);color:var(--yellow);font-family:var(--mono);font-size:0.65rem;font-weight:700;margin-bottom:10px;}
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(245,197,24,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(245,197,24,0.025) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,0.06) 0px, transparent 1px, transparent 3px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes spin    { to { transform: rotate(360deg); } }
+@keyframes fadeIn  { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+@keyframes blink   { 0%,49%{opacity:1} 50%,100%{opacity:0} }
+@keyframes pulse   { 0%,100%{opacity:1} 50%{opacity:0.3} }
+@keyframes slideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+@keyframes glitch  { 0%,94%,100%{transform:translate(0)} 96%{transform:translate(-2px,1px)} 98%{transform:translate(2px,-1px)} }
+
+/* HEADER */
+header {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(10,11,20,0.97);
+  border-bottom: 3px solid var(--border);
+  box-shadow: 0 3px 0 rgba(0,0,0,0.6), 0 4px 0 rgba(245,197,24,0.08);
+  padding: 0 1.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 60px;
+}
+
+.logo {
+  display: flex; align-items: center; gap: 10px;
+}
+
+.logo-icon {
+  width: 32px; height: 32px;
+  background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; color: #1a0a00;
+  border: 2px solid #8b6800;
+  border-bottom: 3px solid #5a4200;
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.7);
+  flex-shrink: 0;
+  font-family: var(--mono);
+  font-weight: bold;
+}
+
+.logo-name {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--accent);
+  letter-spacing: 0.06em;
+  display: block;
+}
+.logo-sub {
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  color: var(--muted);
+  display: block;
+  margin-top: 1px;
+}
+
+.header-right { display: flex; align-items: center; gap: 12px; }
+
+.status-dot {
+  width: 8px; height: 8px;
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+  animation: blink 1.4s step-end infinite;
+  border-radius: 50%;
+}
+
+.user-badge {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 10px;
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  border-bottom: 3px solid rgba(0,0,0,0.6);
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.6);
+  font-family: var(--sans); font-size: 0.9rem;
+}
+
+.role-pill {
+  padding: 2px 7px;
+  font-family: var(--mono); font-size: 0.42rem;
+  border: 2px solid; letter-spacing: 0.04em;
+}
+.role-admin { background: rgba(204,68,255,0.15); color: var(--admin); border-color: var(--admin); }
+.role-user  { background: rgba(68,187,255,0.15); color: var(--user);  border-color: var(--user); }
+
+.logout-btn {
+  padding: 6px 10px;
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  border-bottom: 3px solid rgba(0,0,0,0.6);
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.6);
+  color: var(--muted);
+  font-family: var(--mono); font-size: 0.45rem;
+  cursor: pointer; text-decoration: none;
+  display: block; transition: none;
+}
+.logout-btn:hover {
+  border-color: var(--red); color: var(--red);
+  transform: translate(-1px,-1px);
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.6);
+}
+
+/* LAYOUT */
+.app {
+  position: relative; z-index: 2;
+  max-width: 1280px; margin: 0 auto;
+  padding: 1.5rem;
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 1.2rem;
+}
+
+/* PANEL */
+.panel {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-bottom: 4px solid rgba(0,0,0,0.7);
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.7);
+  overflow: hidden;
+}
+
+/* PANEL HEADER */
+.ph {
+  padding: 8px 12px;
+  border-bottom: 2px solid var(--border);
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--mono); font-size: 0.48rem;
+  color: var(--accent);
+  letter-spacing: 0.06em;
+  background: rgba(0,0,0,0.3);
+}
+.dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* SIDEBAR */
+.sidebar { grid-column: 1; display: flex; flex-direction: column; gap: 1rem; }
+
+.log-form { padding: 12px 14px; }
+
+.fl {
+  font-family: var(--mono); font-size: 0.45rem;
+  color: var(--accent); letter-spacing: 0.08em;
+  margin-bottom: 5px; margin-top: 10px; display: block;
+}
+.fl:first-child { margin-top: 0; }
+
+.sc-btn {
+  width: 100%;
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  border-bottom: 3px solid rgba(0,0,0,0.6);
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.6);
+  padding: 8px 10px;
+  cursor: pointer; text-align: left;
+  color: var(--text);
+  margin-bottom: 6px;
+  display: block; transition: none;
+  border-radius: 0;
+}
+.sc-btn:hover {
+  border-color: var(--accent);
+  background: rgba(245,197,24,0.06);
+  transform: translate(-1px,-1px);
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.6);
+}
+.sc-btn:active { transform: translate(2px,2px); box-shadow: 0 0 0 rgba(0,0,0,0.6); border-bottom-width: 2px; }
+.sc-btn.active { border-color: var(--cyan); background: rgba(0,229,255,0.05); }
+
+.sc-btn .sn { font-family: var(--mono); font-size: 0.48rem; color: var(--cyan); margin-bottom: 4px; line-height: 1.7; }
+.sc-btn .ss { font-family: var(--sans); font-size: 0.85rem; color: var(--muted); }
+
+.sb { display: inline-block; margin-top: 4px; padding: 2px 6px; font-family: var(--mono); font-size: 0.42rem; border: 2px solid; }
+.sb-c { background: rgba(255,51,85,0.15); color: var(--red); border-color: var(--red); }
+.sb-h { background: rgba(255,119,48,0.15); color: var(--orange); border-color: var(--orange); }
+
+.log-ta, .inp {
+  width: 100%;
+  background: #050810;
+  border: 2px solid var(--border2);
+  border-bottom: 3px solid rgba(0,0,0,0.7);
+  padding: 8px 10px;
+  font-family: var(--sans); font-size: 0.9rem;
+  color: var(--cyan); outline: none;
+  box-shadow: inset 2px 2px 0 rgba(0,0,0,0.4);
+  border-radius: 0;
+}
+.log-ta { resize: vertical; min-height: 80px; line-height: 1.6; }
+.log-ta:focus, .inp:focus { border-color: var(--cyan); }
+.inp { color: var(--text); }
+
+.analyze-btn {
+  width: 100%; margin-top: 12px; padding: 11px;
+  background: rgba(245,197,24,0.12);
+  border: 2px solid var(--accent);
+  border-bottom: 4px solid rgba(180,140,0,0.5);
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.7);
+  color: var(--accent);
+  font-family: var(--mono); font-size: 0.48rem;
+  letter-spacing: 0.08em; cursor: pointer;
+  transition: none; border-radius: 0;
+}
+.analyze-btn:hover:not(:disabled) {
+  background: rgba(245,197,24,0.2);
+  transform: translate(-1px,-1px);
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.7);
+}
+.analyze-btn:active:not(:disabled) { transform: translate(2px,2px); box-shadow: 1px 1px 0 rgba(0,0,0,0.7); border-bottom-width: 2px; }
+.analyze-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* MAIN AREA */
+.main-area { grid-column: 2; display: flex; flex-direction: column; gap: 1rem; }
+
+/* METRICS */
+.metrics { display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem; }
+
+.mc {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-bottom: 4px solid rgba(0,0,0,0.7);
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.7);
+  padding: 12px 14px;
+}
+.ml {
+  font-family: var(--mono); font-size: 0.44rem;
+  color: var(--muted); letter-spacing: 0.1em;
+  margin-bottom: 8px;
+}
+.mv {
+  font-family: var(--mono); font-size: 1.5rem;
+  color: var(--accent); margin-bottom: 4px;
+  line-height: 1; display: block;
+}
+.ms { font-family: var(--sans); font-size: 0.85rem; color: var(--muted); }
+
+/* RESULT CARD */
+.result-card {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-bottom: 4px solid rgba(0,0,0,0.7);
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.7);
+  overflow: hidden;
+}
+
+.rh {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 14px;
+  border-bottom: 2px solid var(--border);
+  font-family: var(--mono); font-size: 0.44rem;
+  color: var(--accent); background: rgba(0,0,0,0.35);
+  letter-spacing: 0.06em;
+}
+
+.rb { display: grid; grid-template-columns: 1fr 1fr; }
+.rl { border-right: 2px solid var(--border); padding: 14px; }
+.rr { padding: 14px; }
+
+.it {
+  font-family: var(--mono); font-size: 0.52rem;
+  color: var(--text); margin-bottom: 10px; line-height: 2;
+  animation: glitch 9s ease infinite;
+}
+
+.mr2 { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+
+.chip {
+  padding: 3px 7px;
+  font-family: var(--mono); font-size: 0.4rem;
+  border: 2px solid; letter-spacing: 0.04em;
+}
+.chip-crit   { background: rgba(255,51,85,0.12);   color: var(--red);    border-color: var(--red); }
+.chip-high   { background: rgba(255,119,48,0.12);  color: var(--orange); border-color: var(--orange); }
+.chip-admin  { background: rgba(204,68,255,0.12);  color: var(--admin);  border-color: var(--admin); }
+.chip-user   { background: rgba(68,187,255,0.12);  color: var(--user);   border-color: var(--user); }
+.chip-gray   { background: rgba(255,255,255,0.04); color: var(--muted);  border-color: var(--border); }
+.chip-green  { background: rgba(0,255,136,0.1);    color: var(--green);  border-color: var(--green); }
+.chip-red    { background: rgba(255,51,85,0.12);   color: var(--red);    border-color: var(--red); }
+.chip-yellow { background: rgba(245,197,24,0.1);   color: var(--accent); border-color: var(--accent); }
+
+.conf-label { font-family: var(--sans); font-size: 0.85rem; color: var(--muted); display: flex; justify-content: space-between; margin-bottom: 4px; }
+.conf-bar {
+  height: 10px;
+  background: #050810;
+  border: 2px solid var(--border);
+  overflow: hidden; margin-bottom: 10px;
+  image-rendering: pixelated;
+}
+.conf-fill {
+  height: 100%;
+  background: repeating-linear-gradient(90deg, var(--green) 0 5px, rgba(0,0,0,0.2) 5px 6px);
+  transition: width 1s steps(20);
+}
+
+.sl {
+  font-family: var(--mono); font-size: 0.44rem;
+  color: var(--accent); letter-spacing: 0.1em;
+  margin-bottom: 6px; margin-top: 12px;
+  display: flex; align-items: center; gap: 6px;
+}
+.sl::after { content: ''; flex: 1; height: 2px; background: var(--border); }
+
+.root-cause {
+  font-family: var(--sans); font-size: 0.95rem; line-height: 1.7;
+  color: var(--cyan);
+  background: rgba(0,229,255,0.04);
+  border-left: 4px solid var(--cyan);
+  padding: 8px 10px; margin-bottom: 10px;
+}
+
+.reasoning {
+  font-family: var(--sans); font-size: 0.9rem; line-height: 1.8;
+  color: #9ab8d8; margin-bottom: 10px;
+}
+
+.cmd {
+  background: #050810;
+  border: 2px solid var(--border2);
+  border-left: 4px solid var(--green);
+  overflow: hidden; margin-bottom: 10px;
+}
+.cmd-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 5px 10px;
+  border-bottom: 2px solid var(--border);
+  background: rgba(0,255,136,0.04);
+  font-family: var(--mono); font-size: 0.42rem;
+}
+.cmd-body {
+  padding: 10px 12px;
+  font-family: monospace; font-size: 0.95rem; line-height: 1.6;
+  color: var(--green);
+}
+.cmd-body.null-cmd { color: var(--muted); font-style: italic; display: flex; align-items: center; gap: 6px; }
+.cmd-prompt { color: var(--accent); margin-right: 6px; }
+
+.fix-text {
+  font-family: var(--sans); font-size: 0.95rem; line-height: 1.9;
+  color: #9ab8d8; white-space: pre-line;
+}
+
+.rollback {
+  font-family: var(--sans); font-size: 0.9rem; line-height: 1.7;
+  padding: 8px 10px;
+  background: rgba(255,119,48,0.05);
+  border: 2px solid rgba(255,119,48,0.2);
+  border-left: 4px solid var(--orange);
+  color: #dd9960;
+}
+
+.sig-box {
+  background: rgba(0,255,136,0.04);
+  border: 2px solid rgba(0,255,136,0.15);
+  padding: 8px 10px; margin-top: 8px;
+  font-family: monospace; font-size: 0.85rem;
+  color: var(--green); line-height: 1.6;
+}
+
+.gh-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 10px;
+  font-family: var(--mono); font-size: 0.42rem;
+  background: rgba(0,255,136,0.08);
+  border: 2px solid rgba(0,255,136,0.3);
+  color: var(--green); text-decoration: none;
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.6);
+  margin-top: 8px; display: inline-block;
+}
+
+.empty {
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 12px;
+  min-height: 180px; color: var(--muted);
+  font-family: var(--mono); font-size: 0.48rem;
+  text-align: center; padding: 20px;
+  grid-column: 1/-1;
+}
+
+.loading {
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 12px;
+  min-height: 180px; grid-column: 1/-1;
+}
+.spinner {
+  font-family: var(--mono); font-size: 0.9rem;
+  color: var(--accent); animation: blink 0.5s step-end infinite;
+}
+
+.err-box {
+  padding: 12px 14px;
+  background: rgba(255,51,85,0.07);
+  border: 2px solid var(--red);
+  border-left: 4px solid var(--red);
+  color: var(--red);
+  font-family: var(--sans); font-size: 0.95rem; line-height: 1.7;
+  grid-column: 1/-1; margin: 14px;
+}
+
+/* AUDIT TRAIL */
+.ai {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--sans); font-size: 0.85rem;
+}
+.ai:last-child { border-bottom: none; }
+.ai-time { color: var(--muted); min-width: 76px; }
+.ai-text { color: var(--text); flex: 1; line-height: 1.5; }
+
+/* VERDICT / BLAST */
+.verdict-box {
+  background: rgba(0,229,255,0.04);
+  border: 2px solid rgba(0,229,255,0.15);
+  border-left: 4px solid var(--cyan);
+  padding: 8px 10px; margin-bottom: 10px;
+  font-family: var(--sans); font-size: 0.95rem;
+  color: var(--text); line-height: 1.7;
+}
+.blast-box {
+  background: rgba(255,119,48,0.05);
+  border: 2px solid rgba(255,119,48,0.2);
+  border-left: 4px solid var(--orange);
+  padding: 8px 10px; margin-bottom: 10px;
+  font-family: var(--sans); font-size: 0.95rem;
+  color: #dd9960; line-height: 1.7;
+}
+
+.risk-bar-wrap { margin-bottom: 12px; }
+.risk-label { font-family: var(--sans); font-size: 0.85rem; color: var(--muted); display: flex; justify-content: space-between; margin-bottom: 4px; }
+.risk-bar {
+  height: 10px;
+  background: #050810;
+  border: 2px solid var(--border);
+  overflow: hidden; image-rendering: pixelated;
+}
+.risk-fill {
+  height: 100%;
+  background: repeating-linear-gradient(90deg, currentColor 0 5px, rgba(0,0,0,0.2) 5px 6px);
+  transition: width 1s steps(20);
+}
+
+.safe-alts { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+.safe-alt-cmd {
+  font-family: monospace; font-size: 0.9rem;
+  background: #050810;
+  border: 2px solid var(--border2);
+  padding: 5px 8px; color: var(--green);
+  display: flex; align-items: center; gap: 6px;
+}
+.safe-alt-cmd::before { content: '$'; color: var(--muted); flex-shrink: 0; }
+
+.mfa-required-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 8px;
+  background: rgba(245,197,24,0.1);
+  border: 2px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--mono); font-size: 0.42rem;
+  margin-bottom: 10px;
+}
+
+/* MODALS */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(3px);
+}
+.overlay.hidden { display: none; }
+
+.modal {
+  background: var(--surface);
+  border: 3px solid var(--border2);
+  border-bottom: 5px solid rgba(0,0,0,0.8);
+  box-shadow: 8px 8px 0 rgba(0,0,0,0.8);
+  padding: 1.8rem;
+  max-width: 480px; width: 90%;
+  animation: slideUp 0.2s steps(5);
+  border-radius: 0;
+}
+
+.modal-icon { font-size: 1.5rem; margin-bottom: 0.8rem; display: block; }
+
+.modal-title {
+  font-family: var(--mono); font-size: 0.58rem;
+  color: var(--text); margin-bottom: 0.6rem; line-height: 2;
+}
+
+.modal-sub {
+  font-family: var(--sans); font-size: 0.95rem;
+  color: var(--muted); line-height: 1.8; margin-bottom: 1.1rem;
+}
+.modal-sub strong { color: var(--accent); }
+
+.mfa-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 3px 8px;
+  background: rgba(245,197,24,0.1); border: 2px solid var(--accent);
+  color: var(--accent); font-family: var(--mono); font-size: 0.44rem;
+  margin-bottom: 0.8rem;
+}
+
+.modal-btn {
+  width: 100%; padding: 11px;
+  font-family: var(--mono); font-size: 0.46rem; letter-spacing: 0.06em;
+  cursor: pointer; margin-bottom: 8px;
+  border: 2px solid;
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.7);
+  transition: none; border-radius: 0;
+}
+.modal-btn:hover { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 rgba(0,0,0,0.7); }
+.modal-btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 rgba(0,0,0,0.7); }
+
+.btn-p { background: rgba(204,68,255,0.12); border-color: var(--admin); color: var(--admin); }
+.btn-s { background: transparent; border-color: var(--border); color: var(--muted); }
+
+.consent-list { list-style: none; margin: 0.8rem 0 1rem; }
+.consent-list li {
+  font-family: var(--sans); font-size: 0.9rem; color: var(--muted);
+  line-height: 1.8; padding: 2px 0;
+  display: flex; align-items: flex-start; gap: 8px;
+}
+.consent-list li::before { content: '>OK'; color: var(--green); font-family: var(--mono); font-size: 0.38rem; flex-shrink: 0; margin-top: 5px; }
+.consent-list li.deny::before { content: '>NO'; color: var(--red); }
+.consent-list li.deny { color: rgba(255,51,85,0.65); }
+
+.consent-info {
+  padding: 8px 12px;
+  background: rgba(0,229,255,0.05);
+  border: 2px solid rgba(0,229,255,0.2);
+  font-family: var(--sans); font-size: 0.9rem;
+  color: var(--cyan); line-height: 1.6; margin-bottom: 1rem;
+}
 </style>
 </head>
 <body>
@@ -134,25 +587,25 @@ header{position:sticky;top:0;z-index:100;border-bottom:1px solid var(--border);b
 <!-- Step-up MFA Modal -->
 <div class="overlay hidden" id="mfaOverlay">
   <div class="modal">
-    <div class="modal-icon">🔐</div>
-    <div class="mfa-badge">⚠ CRITICAL SEVERITY — MFA REQUIRED</div>
-    <div class="modal-title">Multi-Factor Authentication Required</div>
+    <span class="modal-icon">[MFA]</span>
+    <div class="mfa-badge">! CRITICAL SEVERITY -- MFA REQUIRED</div>
+    <div class="modal-title">MULTI-FACTOR AUTH REQUIRED</div>
     <div class="modal-sub">
       This incident is classified as <strong>CRITICAL severity</strong>.
       Auth0 requires you to verify your identity with a second factor before
       Cerberus can issue executable bash commands at this privilege level.<br><br>
       You will complete MFA (push notification or OTP) and return automatically.
     </div>
-    <button class="modal-btn btn-p" onclick="proceedMFA()">🔐 Complete MFA &amp; Authorize</button>
-    <button class="modal-btn btn-s" onclick="dismissMFA()">Cancel — show explanation only</button>
+    <button class="modal-btn btn-p" onclick="proceedMFA()">[MFA] COMPLETE MFA &amp; AUTHORIZE</button>
+    <button class="modal-btn btn-s" onclick="dismissMFA()">CANCEL -- SHOW EXPLANATION ONLY</button>
   </div>
 </div>
 
 <!-- GitHub Progressive Consent Modal -->
 <div class="overlay hidden" id="ghOverlay">
   <div class="modal">
-    <div class="modal-icon">📋</div>
-    <div class="modal-title">Open a GitHub Issue?</div>
+    <span class="modal-icon">[GH]</span>
+    <div class="modal-title">OPEN A GITHUB ISSUE?</div>
     <div class="consent-info">
       Cerberus uses <strong>Auth0 Token Vault</strong> to access GitHub on your behalf.
       Your token is stored inside Auth0's secure vault — never in our database or code.
@@ -166,90 +619,91 @@ header{position:sticky;top:0;z-index:100;border-bottom:1px solid var(--border);b
       <li class="deny">Make commits or modify your codebase</li>
       <li class="deny">Access anything beyond this single issue</li>
     </ul>
-    <div style="font-size:0.7rem;color:var(--muted);margin-bottom:1rem;line-height:1.6;">
-      Scope: <code style="color:var(--accent);font-family:var(--mono)">public_repo</code> only.
+    <div style="font-family:var(--sans);font-size:0.9rem;color:var(--muted);margin-bottom:1rem;line-height:1.7;">
+      Scope: <code style="color:var(--cyan);font-family:monospace">public_repo</code> only.
       Revoke anytime: GitHub → Settings → Applications.
     </div>
-    <button class="modal-btn btn-p" onclick="proceedGitHub()">✓ Authorize GitHub Access</button>
-    <button class="modal-btn btn-s" onclick="dismissGitHub()">No thanks — skip GitHub issue</button>
+    <button class="modal-btn btn-p" onclick="proceedGitHub()">+ AUTHORIZE GITHUB ACCESS</button>
+    <button class="modal-btn btn-s" onclick="dismissGitHub()">SKIP GITHUB ISSUE</button>
   </div>
 </div>
 
 <header>
   <div class="logo">
-    <div class="logo-icon">⚡</div>
-    <div><div>CERBERUS</div><div class="logo-sub">Zero-Trust IT Remediation · v2.0</div></div>
+    <div class="logo-icon">**</div>
+    <div>
+      <span class="logo-name">CERBERUS</span>
+      <span class="logo-sub">Zero-Trust IT Remediation · v2.0</span>
+    </div>
   </div>
   <div class="header-right">
-    <div style="display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:0.65rem;color:var(--muted);">
+    <div style="display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:0.45rem;color:var(--green);">
       <div class="status-dot"></div><span id="apiStatus">LIVE</span>
     </div>
     <div class="user-badge">
       <span id="userName" style="color:var(--text)">...</span>
       <span class="role-pill" id="rolePill">...</span>
     </div>
-    <a href="/logout" class="logout-btn">Logout</a>
+    <a href="/logout" class="logout-btn">[LOGOUT]</a>
   </div>
 </header>
 
 <div class="app">
   <div class="sidebar">
     <div class="panel">
-      <div class="ph"><div class="dot" style="background:var(--yellow)"></div>Scenarios</div>
+      <div class="ph"><div class="dot" style="background:var(--accent)"></div>SCENARIOS</div>
       <div class="log-form">
         <div id="scList"></div>
-        <label class="fl">Custom log</label>
-        <textarea class="log-ta" id="logText" placeholder="Paste system log here..."></textarea>
-        <label class="fl">Service name</label>
+        <label class="fl">&gt; CUSTOM LOG</label>
+        <textarea class="log-ta" id="logText" placeholder="// paste system log here..."></textarea>
+        <label class="fl">&gt; SERVICE NAME</label>
         <input class="inp" id="serviceName" value="unknown">
-        <label class="fl">GitHub repo <span style="color:var(--border2)">(optional — consent shown after analysis)</span></label>
+        <label class="fl">&gt; GITHUB REPO <span style="color:var(--border2);font-family:var(--sans);font-size:0.85rem">(optional — consent shown after analysis)</span></label>
         <input class="inp" id="githubRepo" placeholder="username/repo">
-        <button class="analyze-btn" id="analyzeBtn" onclick="runAnalysis()">▶ ANALYZE LOG</button>
+        <button class="analyze-btn" id="analyzeBtn" onclick="runAnalysis()">&gt; ANALYZE LOG</button>
       </div>
     </div>
     <div class="panel">
-      <div class="ph"><div class="dot" style="background:var(--admin)"></div>Permission Level</div>
+      <div class="ph"><div class="dot" style="background:var(--admin)"></div>PERMISSION LEVEL</div>
       <div style="padding:14px 16px;" id="roleExplain">
-        <div style="font-family:var(--mono);font-size:0.68rem;color:var(--muted)">Loading...</div>
+        <div style="font-family:var(--sans);font-size:0.9rem;color:var(--muted)">Loading...</div>
       </div>
     </div>
   </div>
 
   <div class="main-area">
     <div class="metrics">
-      <div class="mc"><div class="ml">Requests</div><div class="mv" id="mReq">0</div><div class="ms">this session</div></div>
-      <div class="mc"><div class="ml">Failures found</div><div class="mv" id="mFail" style="color:var(--red)">0</div><div class="ms">detected</div></div>
-      <div class="mc"><div class="ml">Avg confidence</div><div class="mv" id="mConf" style="color:var(--green)">—</div><div class="ms">AI accuracy</div></div>
-      <div class="mc"><div class="ml">Commands blocked</div><div class="mv" id="mBlock" style="color:var(--yellow)">0</div><div class="ms">by filter</div></div>
+      <div class="mc"><div class="ml">AVG CONFIDENCE</div><div class="mv" id="mConf" style="color:var(--green)">--</div><div class="ms">AI accuracy</div></div>
+      <div class="mc"><div class="ml">CMDS BLOCKED</div><div class="mv" id="mBlock" style="color:var(--accent)">0</div><div class="ms">by filter</div></div>
     </div>
 
     <div class="result-card">
       <div class="rh">
-        <span><span class="dot" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-right:6px;vertical-align:middle;"></span>Remediation Output — Zero-Trust Pipeline</span>
-        <span id="permBadge" style="font-family:var(--mono);font-size:0.65rem;"></span>
+        <span><span class="dot" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-right:6px;vertical-align:middle;"></span>// REMEDIATION OUTPUT -- ZERO-TRUST PIPELINE</span>
+        <span id="permBadge" style="font-family:var(--mono);font-size:0.44rem;"></span>
       </div>
       <div class="rb" id="resultBody">
         <div class="empty">
-          <div style="font-size:2rem;opacity:0.3">🤖</div>
-          <div>Select a scenario and click Analyze</div>
-          <div style="color:var(--border2);font-size:0.6rem;margin-top:4px">PII scrub → Auth0 RBAC → Vertex AI → AntiHallucination filter → RSA-PSS sign</div>
+          <div style="font-size:1.8rem;opacity:0.25;">[AI]</div>
+          <div>SELECT SCENARIO &amp; CLICK ANALYZE</div>
+          <div style="color:var(--border2);font-family:var(--sans);font-size:0.8rem;margin-top:4px;line-height:2">PII SCRUB &rarr; AUTH0 RBAC &rarr; VERTEX AI &rarr; ANTIHALLUCINATION &rarr; RSA-PSS SIGN</div>
         </div>
       </div>
     </div>
 
     <div class="panel">
-  <div class="ph">
-    <div class="dot" style="background:var(--green)"></div>
-    Security Audit Trail
-    <div style="margin-left:auto; display:flex; align-items:center; gap:10px;">
-      <button onclick="clearAccountHistory()" style="background:transparent; border:none; color:var(--red); font-family:var(--mono); font-size:0.6rem; cursor:pointer; padding:0; opacity:0.6;">[CLEAR]</button>
-      <span style="color:var(--border2); font-size:0.6rem" id="auditCount">0 events</span>
+      <div class="ph">
+        <div class="dot" style="background:var(--green)"></div>
+        SECURITY AUDIT LOG
+        <div style="margin-left:auto; display:flex; align-items:center; gap:10px;">
+          <button onclick="clearAccountHistory()" style="background:transparent; border:none; color:var(--red); font-family:var(--mono); font-size:0.4rem; cursor:pointer; padding:0;">[CLR]</button>
+          <span style="color:var(--muted);font-family:var(--mono);font-size:0.4rem;" id="auditCount">0 EVENTS</span>
+        </div>
+      </div>
+      <div id="auditList">
+        <div style="padding:14px;font-family:var(--sans);font-size:0.9rem;color:var(--muted);text-align:center;">// NO EVENTS YET</div>
+      </div>
     </div>
-  </div>
-  <div id="auditList">
-    <div style="padding:14px 16px;font-family:var(--mono);font-size:0.68rem;color:var(--muted);text-align:center;">No events yet</div>
-  </div>
-</div>
   </div>
 </div>
 
@@ -321,7 +775,7 @@ function renderAuditListFromHistory() {
     if (!list) return;
 
     if (auditEvents.length === 0) {
-        list.innerHTML = '<div style="padding:14px 16px;font-family:var(--mono);font-size:0.68rem;color:var(--muted);text-align:center;">No events yet</div>';
+        list.innerHTML = '<div style="padding:14px 16px;font-family:var(--sans);font-size:0.9rem;color:var(--muted);text-align:center;">// NO EVENTS YET</div>';
         return;
     }
 
@@ -343,7 +797,7 @@ function renderAuditListFromHistory() {
           <div class="ai-text">
             req:${e.request_id} · ${e.service_name} · ${severity}
           </div>
-          <span class="role-pill ${isAdmin ? 'role-admin' : 'role-user'}" style="font-size:0.5rem">
+          <span class="role-pill ${isAdmin ? 'role-admin' : 'role-user'}" style="font-size:0.38rem">
             ${isAdmin ? 'ADMIN' : 'USER'}
           </span>
         </div>`;
@@ -353,35 +807,35 @@ function renderAuditListFromHistory() {
 (async function init() {
   buildScenarios();
   
-  // 1. CRITICAL: Wait for user session to be fully loaded
-  // This ensures userInfo.is_admin and the session cookie are ready
-  await loadUser(); 
+  // // 1. CRITICAL: Wait for user session to be fully loaded
+  // // This ensures userInfo.is_admin and the session cookie are ready
+  // await loadUser(); 
   
-  checkHealth();
+  // checkHealth();
 
-  // 2. CHECK FOR PENDING STATE
-  const savedLog = localStorage.getItem('pending_log');
+  // // 2. CHECK FOR PENDING STATE
+  // const savedLog = localStorage.getItem('pending_log');
   
-  if (savedLog) {
-    console.log("MFA complete: Resuming pending analysis with verified session...");
+  // if (savedLog) {
+  //   console.log("MFA complete: Resuming pending analysis with verified session...");
     
-    // Fill the UI back up
-    document.getElementById('logText').value = savedLog;
-    document.getElementById('serviceName').value = localStorage.getItem('pending_service') || 'unknown';
-    document.getElementById('githubRepo').value = localStorage.getItem('pending_repo') || '';
+  //   // Fill the UI back up
+  //   document.getElementById('logText').value = savedLog;
+  //   document.getElementById('serviceName').value = localStorage.getItem('pending_service') || 'unknown';
+  //   document.getElementById('githubRepo').value = localStorage.getItem('pending_repo') || '';
     
-    // 3. Clear storage BEFORE running to prevent any loop if an error occurs
-    localStorage.removeItem('pending_log');
-    localStorage.removeItem('pending_service');
-    localStorage.removeItem('pending_repo');
+  //   // 3. Clear storage BEFORE running to prevent any loop if an error occurs
+  //   localStorage.removeItem('pending_log');
+  //   localStorage.removeItem('pending_service');
+  //   localStorage.removeItem('pending_repo');
 
-    // 4. Trigger analysis. 
-    // Since loadUser() finished, the backend will now see your MFA status.
-    runAnalysis(); 
-  } else {
-    // If no pending log, maybe fetch the account history from Redis?
-    // fetchAccountHistory(); 
-  }
+  //   // 4. Trigger analysis. 
+  //   // Since loadUser() finished, the backend will now see your MFA status.
+  //   runAnalysis(); 
+  // } else {
+  //   // If no pending log, maybe fetch the account history from Redis?
+  //   // fetchAccountHistory(); 
+  // }
 })();
 
 async function loadUser() {
@@ -397,18 +851,22 @@ async function loadUser() {
     pill.textContent = isAdmin ? 'ADMIN' : 'USER';
     pill.className   = `role-pill ${isAdmin ? 'role-admin' : 'role-user'}`;
     document.getElementById('roleExplain').innerHTML = isAdmin
-      ? `<div style="color:var(--admin);font-weight:600;font-family:var(--mono);font-size:0.75rem;margin-bottom:8px">🔑 Admin</div>
-         <div style="font-size:0.73rem;color:var(--muted);line-height:1.8">
-           • Executable bash commands<br>
-           • AntiHallucinationFilter validation<br>
-           • RSA-PSS cryptographic signing<br>
-           • Step-up MFA for critical incidents
+      ? `<div style="padding:14px 16px;">
+           <div style="font-family:var(--mono);font-size:0.54rem;color:var(--admin);letter-spacing:0.05em;line-height:1.8;margin-bottom:8px">🔑 Admin</div>
+           <div style="font-family:var(--sans);font-size:0.85rem;color:var(--muted);line-height:1.9;">
+             &gt; Executable bash commands<br>
+             &gt; AntiHallucinationFilter validation<br>
+             &gt; RSA-PSS cryptographic signing<br>
+             &gt; Step-up MFA for critical incidents
+           </div>
          </div>`
-      : `<div style="color:var(--user);font-weight:600;font-family:var(--mono);font-size:0.75rem;margin-bottom:8px">👤 User</div>
-         <div style="font-size:0.73rem;color:var(--muted);line-height:1.8">
-           • Root cause explanation<br>
-           • Manual remediation steps<br>
-           • No executable commands
+      : `<div style="padding:14px 16px;">
+           <div style="font-family:var(--mono);font-size:0.54rem;color:var(--user);letter-spacing:0.05em;line-height:1.8;margin-bottom:8px">👤 User</div>
+           <div style="font-family:var(--sans);font-size:0.85rem;color:var(--muted);line-height:1.9;">
+             &gt; Root cause explanation<br>
+             &gt; Manual remediation steps<br>
+             &gt; No executable commands
+           </div>
          </div>`;
   } catch(e) { window.location.href = '/'; }
 }
@@ -465,12 +923,12 @@ async function runAnalysis() {
   if (githubRepo) localStorage.setItem('pending_repo', githubRepo);
 
   const btn = document.getElementById('analyzeBtn');
-  btn.disabled = true; btn.textContent = '⏳ ANALYZING...';
+  btn.disabled = true; btn.textContent = '... ANALYZING...';
   document.getElementById('resultBody').innerHTML = `
     <div class="loading">
-      <div class="spinner"></div>
-      <div style="font-family:var(--mono);font-size:0.72rem;color:var(--muted)">
-        Scrubbing PII → Auth0 RBAC → Vertex AI → AntiHallucination → RSA-PSS sign
+      <div class="spinner">+ PROCESSING +</div>
+      <div style="font-family:var(--sans);font-size:0.9rem;color:var(--muted);line-height:2.2;text-align:center;">
+        Scrubbing PII &rarr; Auth0 RBAC &rarr; Vertex AI &rarr; AntiHallucination &rarr; RSA-PSS sign
       </div>
     </div>`;
   document.getElementById('permBadge').textContent = '';
@@ -512,7 +970,7 @@ async function runAnalysis() {
           document.getElementById('mfaOverlay').classList.remove('hidden');
         }
         
-        btn.disabled = false; btn.textContent = '▶ ANALYZE LOG'; 
+        btn.disabled = false; btn.textContent = '> ANALYZE LOG'; 
         return;
       }
     }
@@ -522,8 +980,8 @@ async function runAnalysis() {
       const errorMsg = json.error?.message || json.detail || "Unknown Error";
       document.getElementById('resultBody').innerHTML = `
         <div class="err-box">Error ${resp.status}: ${errorMsg}<br>
-        ${resp.status === 401 ? '<a href="/login" style="color:var(--accent)">Re-login</a>' : ''}</div>`;
-      btn.disabled = false; btn.textContent = '▶ ANALYZE LOG'; 
+        ${resp.status === 401 ? '<a href="/login" style="color:var(--cyan)">Re-login</a>' : ''}</div>`;
+      btn.disabled = false; btn.textContent = '> ANALYZE LOG'; 
       return;
     }
 
@@ -565,7 +1023,7 @@ async function runAnalysis() {
       `<div class="err-box">Application Error: ${e.message}</div>`;
   }
   
-  btn.disabled = false; btn.textContent = '▶ ANALYZE LOG';
+  btn.disabled = false; btn.textContent = '> ANALYZE LOG';
 }
 
 async function fetchAccountHistory() {
@@ -655,7 +1113,7 @@ async function proceedGitHub() {
   }
 
   const btn = document.getElementById('analyzeBtn');
-  btn.disabled = true; btn.textContent = '⏳ Creating GitHub issue...';
+  btn.disabled = true; btn.textContent = '... CREATING ISSUE...';
 
   const issue = await createRealGitHubIssue(githubRepo, lastAnalysis);
   if (issue) {
@@ -664,7 +1122,7 @@ async function proceedGitHub() {
     renderResult(lastAnalysis);
   }
 
-  btn.disabled = false; btn.textContent = '▶ ANALYZE LOG';
+  btn.disabled = false; btn.textContent = '> ANALYZE LOG';
 }
 
 function dismissGitHub() { document.getElementById('ghOverlay').classList.add('hidden'); }
@@ -697,7 +1155,7 @@ function updateMetrics(json) {
 function addAudit(json) {
   auditEvents.unshift(json);
   if (auditEvents.length > 30) auditEvents.pop();
-  document.getElementById('auditCount').textContent = `${auditEvents.length} events`;
+  document.getElementById('auditCount').textContent = `${auditEvents.length} EVENTS`;
   document.getElementById('auditList').innerHTML = auditEvents.map(e => {
     const isAdmin  = e.permission_level === 'admin';
     const time     = new Date(e.timestamp).toLocaleTimeString('en-US',{hour12:false});
@@ -705,16 +1163,16 @@ function addAudit(json) {
       ? (e.failure_category==='disk_full'?'var(--red)':'var(--orange)') : 'var(--green)';
     const filter   = e.security_audit?.filter;
     const fBadge   = filter?.original_command_blocked
-      ? ' · <span style="color:var(--red)">⛔ BLOCKED</span>'
-      : filter?.passed ? ' · <span style="color:var(--green)">✓ OK</span>' : '';
-    const sBadge   = e.signed_payload ? ' · <span style="color:var(--green)">✍</span>' : '';
-    const mBadge   = e.audit_trail?.mfa_verified ? ' · <span style="color:var(--yellow)">🔐</span>' : '';
+      ? ' · <span style="color:var(--red)">BLOCKED</span>'
+      : filter?.passed ? ' · <span style="color:var(--green)">OK</span>' : '';
+    const sBadge   = e.signed_payload ? ' · <span style="color:var(--green)">[SIG]</span>' : '';
+    const mBadge   = e.audit_trail?.mfa_verified ? ' · <span style="color:var(--accent)">[MFA]</span>' : '';
     const ghIssue  = e.github_issue;
     const gh       = ghIssue
       ? (() => {
           const isComment = ghIssue.action === 'commented';
           const col = isComment ? 'var(--yellow)' : 'var(--green)';
-          const lbl = isComment ? `💬 #${ghIssue.number}` : `↗ #${ghIssue.number}`;
+          const lbl = isComment ? `[comment] #${ghIssue.number}` : `[issue] #${ghIssue.number}`;
           return ` · <a href="${ghIssue.url}" target="_blank" style="color:${col}">${lbl}</a>`;
         })()
       : '';
@@ -726,9 +1184,10 @@ function addAudit(json) {
         ${e.failure_detected ? e.failure_category : 'healthy'} ·
         ${e.remediation?.confidence||0}%${fBadge}${sBadge}${mBadge}${gh}
       </div>
-      <span style="padding:1px 6px;border-radius:3px;font-size:0.58rem;font-weight:700;flex-shrink:0;
-        background:${isAdmin?'rgba(176,109,255,0.15)':'rgba(0,204,255,0.15)'};
-        color:${isAdmin?'var(--admin)':'var(--user)'}">
+      <span style="padding:1px 6px;border:2px solid;font-size:0.38rem;font-weight:700;flex-shrink:0;font-family:var(--mono);
+        background:${isAdmin?'rgba(204,68,255,0.15)':'rgba(68,187,255,0.15)'};
+        color:${isAdmin?'var(--admin)':'var(--user)'};
+        border-color:${isAdmin?'var(--admin)':'var(--user)'}"}>
         ${isAdmin?'ADMIN':'USER'}
       </span>
     </div>`;
@@ -744,14 +1203,14 @@ function renderResult(json) {
   if (!json.failure_detected) {
     document.getElementById('permBadge').textContent = '';
     document.getElementById('resultBody').innerHTML = `
-      <div class="empty"><div style="font-size:1.5rem">✅</div>
-      <div style="color:var(--green)">No failure detected</div>
-      <div style="color:var(--muted);font-size:0.62rem">Log appears healthy</div></div>`;
+      <div class="empty"><div style="font-size:1.5rem;color:var(--green)">[OK]</div>
+      <div style="color:var(--green)">NO FAILURE DETECTED</div>
+      <div style="color:var(--muted);font-family:var(--sans);font-size:0.85rem">Log appears healthy</div></div>`;
     return;
   }
 
   document.getElementById('permBadge').innerHTML =
-    `<span style="color:${pColor};font-weight:700">${isAdmin?'🔑 ADMIN — COMMANDS ENABLED':'👤 USER — EXPLANATION ONLY'}</span>`;
+    `<span style="color:${pColor};font-family:var(--mono);font-size:0.44rem">${isAdmin?'+ ADMIN -- CMDS ENABLED':'o USER -- READ-ONLY'}</span>`;
 
   const sevClass = d.severity === 'critical'
       ? 'chip-crit'
@@ -764,30 +1223,30 @@ function renderResult(json) {
   const fa       = json.security_audit?.filter || {};
 
   const chips = [
-    `<span class="chip ${sevClass}">⚠ ${d.severity}</span>`,
+    `<span class="chip ${sevClass}">! ${d.severity}</span>`,
     `<span class="chip ${pClass}">${json.permission_level.toUpperCase()}</span>`,
     `<span class="chip chip-gray">req:${json.request_id}</span>`,
-    fa.original_command_blocked ? `<span class="chip chip-red">⛔ BLOCKED</span>` : '',
-    fa.passed && !fa.original_command_blocked ? `<span class="chip chip-green">✓ FILTER</span>` : '',
-    json.audit_trail?.mfa_verified ? `<span class="chip chip-yellow">🔐 MFA</span>` : '',
-    json.signed_payload ? `<span class="chip chip-green">✍ SIGNED</span>` : '',
+    fa.original_command_blocked ? `<span class="chip chip-red">X BLOCKED</span>` : '',
+    fa.passed && !fa.original_command_blocked ? `<span class="chip chip-green">OK FILTER</span>` : '',
+    json.audit_trail?.mfa_verified ? `<span class="chip chip-yellow">[MFA]</span>` : '',
+    json.signed_payload ? `<span class="chip chip-green">[SIGNED]</span>` : '',
   ].filter(Boolean).join('');
 
   // Command section
   const blocked   = d.command_blocked;
   const hasCmd    = isAdmin && d.command && !blocked;
-  const cmdLabel  = hasCmd ? '// BASH — ADMIN AUTHORIZED' : blocked ? '// COMMAND BLOCKED — FILTER' : '// COMMANDS RESTRICTED';
+  const cmdLabel  = hasCmd ? '// BASH -- ADMIN AUTH' : blocked ? '// CMD BLOCKED -- FILTER' : '// CMDS RESTRICTED';
   const cmdColor  = hasCmd ? 'var(--green)' : blocked ? 'var(--red)' : 'var(--user)';
-  const cmdBadge  = hasCmd ? 'FILTER APPROVED · SIGNED' : blocked ? 'ANTI-HALLUCINATION' : d.requires_mfa ? 'MFA REQUIRED' : isAdmin ? 'MANUAL ONLY' : 'USER ROLE';
+  const cmdBadge  = hasCmd ? 'FILTER OK / SIGNED' : blocked ? 'ANTIHALLUCINATION' : d.requires_mfa ? 'MFA REQUIRED' : isAdmin ? 'MANUAL ONLY' : 'USER ROLE';
   const cmdBody   = hasCmd
     ? `<div class="cmd-body"><span class="cmd-prompt">$</span>${d.command}</div>`
     : blocked
-    ? `<div class="cmd-body null-cmd">⛔ ${d.block_reason||'Failed security filter'}</div>`
-    : `<div class="cmd-body null-cmd">${d.requires_mfa ? '🔒 Complete MFA to unlock commands' : 'ℹ️ No automated command generated. Review manual steps.'}</div>`;
+    ? `<div class="cmd-body null-cmd">X ${d.block_reason||'Failed security filter'}</div>`
+    : `<div class="cmd-body null-cmd">${d.requires_mfa ? '[LOCK] Complete MFA to unlock commands' : 'No automated command generated. Review manual steps.'}</div>`;
 
   const sigHtml = json.signed_payload ? `
     <div class="sig-box">
-      ✍ RSA-PSS Signed Payload<br>
+      [SIG] RSA-PSS Signed Payload<br>
       Algorithm: ${json.signed_payload.algorithm}<br>
       Key source: ${json.signed_payload.metadata?.key_source||'ephemeral_local_dev'}<br>
       Signature: ${json.signed_payload.signature?.substring(0,48)}...
@@ -796,13 +1255,13 @@ function renderResult(json) {
   const gh = json.github_issue;
   const ghHtml = gh ? (() => {
     const isComment = gh.action === 'commented';
-    const icon      = isComment ? '💬' : '↗';
+    const icon      = isComment ? '[comment]' : '[issue]';
     const label     = isComment
       ? `Issue #${gh.number} already open — comment added`
       : `Issue #${gh.number} created via Token Vault`;
     const color     = isComment ? 'var(--yellow)' : 'var(--green)';
-    const border    = isComment ? 'rgba(255,204,0,0.3)' : 'rgba(0,255,157,0.3)';
-    const bg        = isComment ? 'rgba(255,204,0,0.08)' : 'rgba(0,255,157,0.1)';
+    const border    = isComment ? 'rgba(245,197,24,0.3)' : 'rgba(0,255,136,0.3)';
+    const bg        = isComment ? 'rgba(245,197,24,0.08)' : 'rgba(0,255,136,0.08)';
     const url       = gh.comment_url || gh.url;
     return `<a class="gh-badge" href="${url}" target="_blank"
               style="color:${color};border-color:${border};background:${bg}">
@@ -812,7 +1271,7 @@ function renderResult(json) {
 
   // Risk bar color: green < 30, yellow < 60, red >= 60
   const riskScore = d.risk_assessment || 0;
-  const riskColor = riskScore < 30 ? 'var(--green)' : riskScore < 60 ? 'var(--yellow)' : 'var(--red)';
+  const riskColor = riskScore < 30 ? 'var(--green)' : riskScore < 60 ? 'var(--accent)' : 'var(--red)';
 
   // Safe alternatives
   const alts = d.safe_alternatives || [];
@@ -822,51 +1281,51 @@ function renderResult(json) {
 
   // Security verdict
   const verdictHtml = d.security_verdict
-    ? `<div class="sl">🔍 Security Verdict</div><div class="verdict-box">${d.security_verdict}</div>` : '';
+    ? `<div class="sl">+ SECURITY VERDICT</div><div class="verdict-box">${d.security_verdict}</div>` : '';
 
   // Blast radius
   const blastHtml = d.blast_radius
-    ? `<div class="sl">💥 Blast Radius</div><div class="blast-box">${d.blast_radius}</div>` : '';
+    ? `<div class="sl">X BLAST RADIUS</div><div class="blast-box">${d.blast_radius}</div>` : '';
 
   // MFA badge
   const mfaBadge = d.requires_mfa
-    ? `<div class="mfa-required-badge">🔐 MFA REQUIRED — Critical severity detected</div>` : '';
+    ? `<div class="mfa-required-badge">[LOCK] MFA REQUIRED — Critical severity detected</div>` : '';
 
   document.getElementById('resultBody').innerHTML = `
     <div class="rl" style="animation:fadeIn 0.4s ease">
       <div class="it">${d.issue}</div>
       <div class="mr2">${chips}</div>
       ${mfaBadge}
-      <div class="conf-label"><span>AI Confidence</span><span style="color:var(--green)">${d.confidence}%</span></div>
+      <div class="conf-label"><span>AI CONFIDENCE</span><span style="color:var(--green)">${d.confidence}%</span></div>
       <div class="conf-bar"><div class="conf-fill" style="width:${d.confidence}%"></div></div>
       <div class="risk-bar-wrap">
-        <div class="risk-label"><span>Risk Assessment</span><span style="color:${riskColor}">${riskScore}/100</span></div>
-        <div class="risk-bar"><div class="risk-fill" style="width:${riskScore}%;background:${riskColor}"></div></div>
+        <div class="risk-label"><span>RISK ASSESSMENT</span><span style="color:${riskColor}">${riskScore}/100</span></div>
+        <div class="risk-bar"><div class="risk-fill" style="width:${riskScore}%;color:${riskColor}"></div></div>
       </div>
-      <div class="sl">Root Cause</div>
+      <div class="sl">ROOT CAUSE</div>
       <div class="root-cause">${d.root_cause}</div>
-      <div class="sl">Agent Reasoning</div>
+      <div class="sl">AGENT REASONING</div>
       <div class="reasoning">${d.reasoning}</div>
       ${verdictHtml}
       ${blastHtml}
       ${ghHtml}
     </div>
     <div class="rr" style="animation:fadeIn 0.4s ease">
-      <div class="sl">${isAdmin?'⚡ Executable Command':'🔍 Read-Only Diagnostics'}</div>
+      <div class="sl">${isAdmin?'+ EXECUTABLE CMD':'o READ-ONLY DIAG'}</div>
       ${mfaBadge}
       <div class="cmd">
         <div class="cmd-hdr">
           <span style="color:${cmdColor};font-weight:700">${cmdLabel}</span>
-          <span style="color:${cmdColor};font-size:0.58rem">${cmdBadge}</span>
+          <span style="color:${cmdColor};font-size:0.38rem">${cmdBadge}</span>
         </div>
         ${cmdBody}
       </div>
       ${sigHtml}
-      <div class="sl" style="margin-top:12px">✅ Safe Alternatives (run these first)</div>
+      <div class="sl" style="margin-top:12px">OK SAFE ALTS (RUN FIRST)</div>
       ${altsHtml}
-      <div class="sl" style="margin-top:12px">Manual Steps</div>
+      <div class="sl" style="margin-top:12px">MANUAL STEPS</div>
       <div class="fix-text">${d.suggested_fix}</div>
-      <div class="sl" style="margin-top:12px">⏪ Rollback</div>
+      <div class="sl" style="margin-top:12px">&lt; ROLLBACK</div>
       <div class="rollback">${d.rollback}</div>
     </div>`;
 
